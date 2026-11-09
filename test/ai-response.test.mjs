@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {parseDraft} from '../lib/ai-response.mjs';
+const response=parts=>({candidates:[{finishReason:'STOP',content:{parts}}]});
+const valid={status:'draft',amount:'12.00',currency:'USD',rationale:'Damaged item',question:null};
+const wrap=d=>response([{text:JSON.stringify(d)}]);
+test('extracts final JSON without thought-tagged text',()=>{assert.deepEqual(parseDraft(response([{thought:true,text:'Not JSON: reasoning'},{text:JSON.stringify(valid)}]),{remainingCents:1200}),valid);});
+test('fails closed on missing final text, malformed JSON and truncation',()=>{for(const data of [response([{thought:true,text:JSON.stringify(valid)}]),response([{text:'plain prose'}]),{candidates:[{finishReason:'MAX_TOKENS',content:{parts:[{text:'{}'}]}}]},{}])assert.throws(()=>parseDraft(data,{remainingCents:1200}));});
+test('rejects invalid money, wrong currencies, extra fields and excessive amounts',()=>{for(const draft of [{...valid,amount:'-1'},{...valid,amount:'1.001'},{...valid,currency:'EUR'},{...valid,amount:'12.01'},{...valid,authorised:true},{...valid,rationale:''},{...valid,question:'Really?'}])assert.throws(()=>parseDraft(wrap(draft),{remainingCents:1200}),{code:'AI_INVALID_DRAFT'});});
+test('requires trusted remaining balance for a monetary draft',()=>{assert.throws(()=>parseDraft(wrap(valid)),{code:'AI_INVALID_DRAFT'});});
+test('clarification has no actionable amount',()=>{const d={status:'clarification',amount:null,currency:'USD',rationale:'Two conflicting amounts',question:'Which amount do you mean?'};assert.deepEqual(parseDraft(wrap(d),{remainingCents:1200}),d);assert.throws(()=>parseDraft(wrap({...d,amount:'10.00'}),{remainingCents:1200}));});
