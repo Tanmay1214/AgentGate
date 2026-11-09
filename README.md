@@ -67,11 +67,3 @@ Webhooks are verified via PayPal before recording them. Matching known pending r
 This is a single-merchant local prototype. Eligibility is explicitly set by the merchant; it is not inferred from customer text or a real returns integration. Budget accounting covers operations initiated here. PayPal still enforces its own refundable amount; external refunds are not yet fully imported into local capture balances. There is no customer identity verification, multi-user login, autonomous inbox processing, distributed worker queue, or PostgreSQL deployment yet. The AI workflow is human-submitted after drafting.
 
 No credentials are bundled. The PayPal sandbox checkout, capture, automatic refund, approved refund and genuine signed webhooks were verified on 9 November 2026 (Asia/Kolkata). See docs/SANDBOX_VERIFICATION.md and docs/sandbox-verification.json for evidence and exact scope. Gemma drafting failed during that run; refund proposals were submitted manually. Test data is persistent; use distinct request keys for genuinely new requests.
-
-## Sources and inspiration
-
-- https://developer.paypal.com/api/payments/v2/captures-refund
-- https://developer.paypal.com/api/rest/integration/orders-api
-- https://developer.paypal.com/api/rest/webhooks/rest/
-- https://ai.google.dev/gemini-api/docs/structured-output
-- Inspired by the proposal / policy / ledger separation in https://github.com/Adwaith-R-Nair/Praman. This implementation is independently written.
