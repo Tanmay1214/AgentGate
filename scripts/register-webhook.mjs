@@ -1,0 +1,14 @@
+import { readFile, writeFile } from 'node:fs/promises';
+import { paypal } from '../lib/paypal.mjs';
+const url=process.argv[2];
+if(!url||!url.startsWith('https://')||new URL(url).pathname!=='/api/webhook')throw Error('Supply the HTTPS webhook URL ending in /api/webhook');
+const names=['PAYMENT.CAPTURE.COMPLETED','PAYMENT.CAPTURE.PENDING','PAYMENT.CAPTURE.DECLINED','PAYMENT.CAPTURE.DENIED','PAYMENT.CAPTURE.REFUNDED','PAYMENT.CAPTURE.REVERSED','PAYMENT.REFUND.COMPLETED','PAYMENT.REFUND.PENDING','PAYMENT.REFUND.DENIED','PAYMENT.REFUND.FAILED','PAYMENT.REFUND.CANCELLED'];
+const existing=(await paypal('/v1/notifications/webhooks')).webhooks||[];
+let hook=existing.find(h=>h.url===url);
+if(!hook)hook=await paypal('/v1/notifications/webhooks',{method:'POST',body:{url,event_types:names.map(name=>({name}))}});
+if(!hook.id)throw Error('PayPal returned no webhook ID');
+const current=await readFile('.env','utf8');
+const updated=/^PAYPAL_WEBHOOK_ID=.*$/m.test(current)?current.replace(/^PAYPAL_WEBHOOK_ID=.*$/m,`PAYPAL_WEBHOOK_ID=${hook.id}`):current+`\nPAYPAL_WEBHOOK_ID=${hook.id}\n`;
+await writeFile('.env',updated);
+const verified=await paypal(`/v1/notifications/webhooks/${encodeURIComponent(hook.id)}`);
+console.log(JSON.stringify({id:verified.id,url:verified.url,eventTypes:verified.event_types.map(t=>t.name),savedToEnv:true}));
