@@ -10,14 +10,16 @@ export function actionElement(row,doc=document){
  if(['pending','unknown'].includes(row.status))button('Check outcome','reconcile');
  return wrap;
 }
+let queue='all';try{queue=sessionStorage.getItem('agentgate-review-queue')||'all';}catch{}
+export function queueRows(rows,name){return rows.filter(r=>name==='approval'?r.status==='approval':name==='uncertain'?['pending','unknown','executing'].includes(r.status):name==='blocked'?r.status==='denied':true);}
 let grid=null,saved={search:'',status:'',filters:null,columns:null,page:0};
 export function destroyRefundGrid(){if(grid){saved.filters=grid.getFilterModel();saved.columns=grid.getColumnState();saved.page=grid.paginationGetCurrentPage();grid.destroy();grid=null;}}
-export function mountRefundGrid(requests){
+export function mountRefundGrid(requests,onSelect=()=>{}){
  const host=document.querySelector('#refund-grid');if(!host)return;
  const ag=window.agGrid;if(!ag?.createGrid){host.textContent='The review grid could not load. Run npm install, restart AgentGate, and reload.';return;}
  const search=document.querySelector('#refund-search'),status=document.querySelector('#refund-status');search.value=saved.search;status.value=saved.status;
  grid=ag.createGrid(host,{
-  theme:'legacy',rowData:gridRows(requests),getRowId:p=>p.data.id,
+  theme:'legacy',rowData:gridRows(queueRows(requests,queue)),onRowClicked:p=>onSelect(p.data.id),getRowId:p=>p.data.id,
   defaultColDef:{sortable:true,resizable:true,filter:true,floatingFilter:true,editable:false,minWidth:140},
   columnDefs:[
    {field:'capture',headerName:'Payment',minWidth:190,flex:1},
@@ -33,7 +35,10 @@ export function mountRefundGrid(requests){
   quickFilterText:saved.search,overlayNoRowsTemplate:'No matching refund requests. Clear the filters or create a new request.',
   onFilterChanged:()=>{if(grid){saved.filters=grid.getFilterModel();const model=saved.filters.status;saved.status=model?.type==='equals'?model.filter:'';status.value=saved.status;}}
  });
- if(saved.columns)grid.applyColumnState({state:saved.columns,applyOrder:true});
+const queueButtons=document.querySelectorAll('[data-refund-queue]');
+ const syncQueue=()=>queueButtons.forEach(b=>{b.classList.toggle('active',b.dataset.refundQueue===queue);b.setAttribute('aria-pressed',String(b.dataset.refundQueue===queue));});
+ queueButtons.forEach(b=>{b.onclick=()=>{queue=b.dataset.refundQueue;try{sessionStorage.setItem('agentgate-review-queue',queue);}catch{}grid.setGridOption('rowData',gridRows(queueRows(requests,queue)));grid.setGridOption('quickFilterText','');grid.setFilterModel(null);saved.search='';search.value='';grid.paginationGoToFirstPage();syncQueue();onSelect(queueRows(requests,queue)[0]?.id);};});syncQueue();if(queue!=='all')onSelect(queueRows(requests,queue)[0]?.id);
+  if(saved.columns)grid.applyColumnState({state:saved.columns,applyOrder:true});
  if(saved.filters)grid.setFilterModel(saved.filters);
  grid.paginationGoToPage(saved.page);
  search.oninput=()=>{saved.search=search.value;grid.setGridOption('quickFilterText',saved.search);};

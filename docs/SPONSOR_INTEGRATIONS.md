@@ -66,3 +66,5 @@ Before searching, the backend upserts refund snapshots and incrementally indexes
 Only operational metadata is sent to your configured Elastic deployment: IDs, amounts in cents, timestamps, statuses, decision codes, event types, sequence numbers and hashes. Customer notes, payment labels, raw event bodies, request keys and credentials are excluded. Search terms are sent to Elastic. No metadata is sent until a search or explicit sync is requested. On-demand sync reindexes all refund snapshots; this is intended for this single-merchant prototype, not a large production history.
 
 API routes use the existing local session and origin checks: POST /api/evidence/search accepts query, kind, status and days; POST /api/evidence/sync refreshes the projection. Automated Postman demo tests do not invoke either endpoint.
+
+The case investigator now retrieves scoped Elastic audit evidence as a read-only tool and verifies citations against the local ledger. Decision explanations and named AG Grid review queues integrate this evidence into case review. See [CASE_WORKFLOW.md](CASE_WORKFLOW.md).

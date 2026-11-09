@@ -35,3 +35,7 @@ On 10 November 2026, the Google model list confirmed access to `gemini-3.5-flash
 - Undecided USD 5 or USD 15 → clarification question and no amount.
 
 The server was restarted and its state confirmed the selected model. These checks generated proposals only and made no PayPal transactions. Three successful examples establish current functionality, not a broad accuracy benchmark or an uptime guarantee.
+
+## Case investigator
+
+The separate case investigator adds bounded read-only tool calls, verified citation IDs, stale-evidence protection and one corrective round for an invalid final recommendation. See [CASE_WORKFLOW.md](CASE_WORKFLOW.md) and the recorded 50-case live evaluation and targeted follow-up. The legacy refund-drafting client above remains available for manual forms.

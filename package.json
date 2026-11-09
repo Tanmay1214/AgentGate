@@ -11,7 +11,8 @@
     "predev": "node scripts/prepare-assets.mjs",
     "prestart": "node scripts/prepare-assets.mjs",
     "test:postman": "node scripts/run-postman.mjs",
-    "postman:generate": "node scripts/generate-postman.mjs"
+    "postman:generate": "node scripts/generate-postman.mjs",
+    "eval:cases": "node --env-file-if-exists=.env scripts/evaluate-case-ai.mjs --live"
   },
   "engines": {
     "node": ">=24"

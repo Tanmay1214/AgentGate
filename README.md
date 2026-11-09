@@ -1,6 +1,6 @@
 # AgentGate
 
-A local merchant control desk for AI-assisted PayPal refunds. The support agent drafts a proposal; deterministic policy code checks it; a provider adapter executes it. Demo mode works without credentials. Sandbox mode uses PayPal test money.
+A local merchant control desk for evidence-backed PayPal refund cases. The support agent drafts a proposal; deterministic policy code checks it; a provider adapter executes it. Demo mode works without credentials. Sandbox mode uses PayPal test money.
 
 ## Run
 
@@ -13,6 +13,12 @@ npm run dev
 ```
 
 Open http://localhost:4310. `npm test` runs the policy and accounting tests.
+
+## Refund case workflow
+
+Open **Refund cases** to record a customer request and merchant return review. Gemini investigates the selected payment using read-only tools, retrieves prior refunds and policy, searches verified audit evidence, and prepares a cited recommendation. Review the amount and policy decision, then submit through the existing refund engine. Individual approval and outcome tracking stay in the same case. See [CASE_WORKFLOW.md](docs/CASE_WORKFLOW.md) for data flow, controls, evaluation and limitations.
+
+The review grid has named approval, uncertain-outcome and blocked-request queues, plus a payment/evidence detail pane. `npm run eval:cases` evaluates 50 labeled synthetic scenarios against the configured live model; it does not call PayPal.
 
 ## Sponsor tools
 
@@ -69,7 +75,7 @@ Webhooks are verified via PayPal before recording them. Matching known pending r
 
 ## Scope and limits
 
-This is a single-merchant local prototype. Eligibility is explicitly set by the merchant; it is not inferred from customer text or a real returns integration. Budget accounting covers operations initiated here. PayPal still enforces its own refundable amount; external refunds are not yet fully imported into local capture balances. There is no customer identity verification, multi-user login, autonomous inbox processing, distributed worker queue, or PostgreSQL deployment yet. The AI workflow is human-submitted after drafting.
+This is a single-merchant local prototype. Eligibility is explicitly set by the merchant; it is not inferred from customer text or a real returns integration. Budget accounting covers operations initiated here. PayPal still enforces its own refundable amount; external refunds are not yet fully imported into local capture balances. There is no customer identity verification, multi-user login, autonomous inbox processing, distributed worker queue, or PostgreSQL deployment yet. The AI investigator prepares evidence-backed recommendations; submitting a payment action is explicit and merchant approval is required above the configured threshold.
 
 No credentials are bundled. The PayPal sandbox checkout, capture, automatic refund, approved refund and genuine signed webhooks were verified on 9 November 2026 (Asia/Kolkata). See docs/SANDBOX_VERIFICATION.md and docs/sandbox-verification.json for evidence and exact scope. Gemma drafting failed during that run; refund proposals were submitted manually. Test data is persistent; use distinct request keys for genuinely new requests.
 
