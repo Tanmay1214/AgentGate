@@ -54,3 +54,15 @@ The collection never logs into the buyer account or automatically bypasses these
 These are product integrations, not a claim of eligibility for any particular sponsor prize. Check the event's exact prize rules before submitting.
 
 References: https://www.ag-grid.com/javascript-data-grid/getting-started/ and https://learning.postman.com/docs/postman-cli/postman-cli-overview/
+
+## Elasticsearch evidence search
+
+Set ELASTICSEARCH_URL to the HTTPS Elasticsearch endpoint and ELASTICSEARCH_API_KEY to the encoded key, without an ApiKey prefix. Restart AgentGate, then open Evidence search. The key needs create_index, write, and read permissions for agentgate-sandbox-evidence-v1 (or agentgate-demo-evidence-v1). Credentials remain server-side.
+
+Search payment IDs, request IDs, statuses, policy reasons and event types. Use record type, status and rolling date filters; each search returns at most 50 records and the total count. This is keyword search with structured filters, not a natural-language AI assistant. Open refund details from a result to inspect the original local record. Audit results include the source sequence and hash for comparison with Audit trail.
+
+Before searching, the backend upserts refund snapshots and incrementally indexes new audit events, with deterministic document IDs and retries after partial bulk failures. Sync errors are shown rather than presenting stale results as current. SQLite remains the source of truth. Indexing and search do not execute payments or change the local audit chain. Search is limited to this data directory and execution mode. Moving or resetting the database requires a fresh namespace/index before reusing it; old documents are not automatically deleted. The index is a search projection, not an independent audit integrity verifier.
+
+Only operational metadata is sent to your configured Elastic deployment: IDs, amounts in cents, timestamps, statuses, decision codes, event types, sequence numbers and hashes. Customer notes, payment labels, raw event bodies, request keys and credentials are excluded. Search terms are sent to Elastic. No metadata is sent until a search or explicit sync is requested. On-demand sync reindexes all refund snapshots; this is intended for this single-merchant prototype, not a large production history.
+
+API routes use the existing local session and origin checks: POST /api/evidence/search accepts query, kind, status and days; POST /api/evidence/sync refreshes the projection. Automated Postman demo tests do not invoke either endpoint.

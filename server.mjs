@@ -1,3 +1,4 @@
+import {createElastic} from './lib/elastic.mjs';
 import {executeRefund} from './lib/refund-executor.mjs';
 import {completeCheckout} from './lib/checkout.mjs';
 import {draftRefund,AIServiceError} from './lib/ai-client.mjs';
@@ -9,6 +10,7 @@ import {store} from './lib/store.mjs';
 import {paypal,providerState,cents} from './lib/paypal.mjs';
 const mode=process.env.PAYPAL_ENV||'demo';if(!['demo','sandbox'].includes(mode))throw Error('Only demo and sandbox environments are supported');
 const dataDir=process.env.DATA_DIR||'data';await mkdir(dataDir,{recursive:true});const s=store(join(dataDir,mode+'.sqlite'));const session=randomBytes(32).toString('hex');
+const elastic=createElastic({mode,dataDir});
 const aiInFlight=new Set();
 const port=Number(process.env.PORT||4310);const origin=process.env.PUBLIC_URL||`http://localhost:${port}`;
 if(mode==='demo')for(const [id,amount,label] of [['DEMO-1042',1200,'Canvas notebook · damaged item'],['DEMO-1043',4500,'Desk organiser · returned'],['DEMO-1044',9000,'Studio headphones · returned'],['DEMO-1045',6000,'Laptop stand · return unverified']])s.run('INSERT OR IGNORE INTO captures VALUES (?,?,?,?,?)',id,amount,'USD',id==='DEMO-1045'?0:1,label);
@@ -16,7 +18,7 @@ if(mode==='demo')for(const [id,amount,label] of [['DEMO-1042',1200,'Canvas noteb
 for(const r of s.all("SELECT id FROM requests WHERE status='executing'"))s.settle(r.id,'unknown');
 async function execute(r){return executeRefund(s,r,mode==='demo'?async()=>{await new Promise(resolve=>setTimeout(resolve,250));return {id:'SIM-'+r.id.slice(0,8),status:'COMPLETED'};}:paypal);}
 async function readBody(req){let text='';for await(const c of req){text+=c;if(text.length>32000)throw Error('Request too large');}return text?JSON.parse(text):{};}
-function state(){const day=new Date().toISOString().slice(0,10);return {mode,ai:!!process.env.GEMINI_API_KEY,aiModel:process.env.GEMINI_MODEL||'gemini-3.5-flash-lite',configured:!!(process.env.PAYPAL_CLIENT_ID&&process.env.PAYPAL_CLIENT_SECRET),webhook:!!process.env.PAYPAL_WEBHOOK_ID,policy:s.policy(),reserved:s.reserved(day),captures:s.all('SELECT * FROM captures').map(c=>({...c,remaining:s.remaining(c.id)})),requests:s.all('SELECT * FROM requests ORDER BY created DESC'),events:s.all('SELECT * FROM events ORDER BY seq DESC LIMIT 100').map(e=>({...e,data:JSON.parse(e.body)})),integrity:s.verify()};}
+function state(){const day=new Date().toISOString().slice(0,10);return {mode,elastic:elastic.info(),ai:!!process.env.GEMINI_API_KEY,aiModel:process.env.GEMINI_MODEL||'gemini-3.5-flash-lite',configured:!!(process.env.PAYPAL_CLIENT_ID&&process.env.PAYPAL_CLIENT_SECRET),webhook:!!process.env.PAYPAL_WEBHOOK_ID,policy:s.policy(),reserved:s.reserved(day),captures:s.all('SELECT * FROM captures').map(c=>({...c,remaining:s.remaining(c.id)})),requests:s.all('SELECT * FROM requests ORDER BY created DESC'),events:s.all('SELECT * FROM events ORDER BY seq DESC LIMIT 100').map(e=>({...e,data:JSON.parse(e.body)})),integrity:s.verify()};}
 const server=http.createServer(async(req,res)=>{const url=new URL(req.url,'http://localhost');const send=(code,value)=>{res.writeHead(code,{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(JSON.stringify(value));};
 try{
  if(url.pathname==='/api/webhook'&&req.method==='POST'){
@@ -39,6 +41,8 @@ try{
   if(req.method==='GET'&&url.pathname==='/api/state')return send(200,state());
   const b=await readBody(req);
   if(req.method!=='POST')return send(405,{error:'Method not allowed'});
+  if(url.pathname==='/api/evidence/search')return send(200,await elastic.search(s,b));
+  if(url.pathname==='/api/evidence/sync')return send(200,await elastic.sync(s));
   if(url.pathname==='/api/propose'){if(typeof b.capture!=='string'||typeof b.note!=='string'||b.note.length>4000)throw Error('Invalid request');return send(200,await execute(s.propose({capture:b.capture,amount:cents(b.amount),note:b.note,idem:b.idem})));}
   if(url.pathname==='/api/review'){if(typeof b.accept!=='boolean')throw Error('Choose approve or reject');return send(200,await execute(s.approve(b.id,b.accept)));}
   if(url.pathname==='/api/policy'){if(typeof b.enabled!=='boolean'||![b.auto,b.daily,b.maximum].every(v=>Number.isSafeInteger(v)&&v>=0&&v<=100000000)||b.auto>b.maximum)throw Error('Invalid policy limits');s.tx(()=>{s.run('UPDATE settings SET body=? WHERE id=1',JSON.stringify({enabled:b.enabled,auto:b.auto,daily:b.daily,maximum:b.maximum}));s.event('POLICY_UPDATED',b);});return send(200,{ok:true});}

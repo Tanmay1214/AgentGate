@@ -5,7 +5,7 @@ import {resolve} from 'node:path';
 import {setTimeout as delay} from 'node:timers/promises';
 const probe=createServer();await new Promise(r=>probe.listen(0,'127.0.0.1',r));const port=probe.address().port;await new Promise(r=>probe.close(r));
 await mkdir('data/postman',{recursive:true});const dir=await mkdtemp(resolve('data/postman/run-'));
-const env={...process.env,PAYPAL_ENV:'demo',PORT:String(port),PUBLIC_URL:`http://localhost:${port}`,DATA_DIR:dir,GEMINI_API_KEY:'',PAYPAL_CLIENT_ID:'',PAYPAL_CLIENT_SECRET:'',PAYPAL_WEBHOOK_ID:''};
+const env={...process.env,PAYPAL_ENV:'demo',PORT:String(port),PUBLIC_URL:`http://localhost:${port}`,DATA_DIR:dir,GEMINI_API_KEY:'',ELASTICSEARCH_URL:'',ELASTICSEARCH_API_KEY:'',PAYPAL_CLIENT_ID:'',PAYPAL_CLIENT_SECRET:'',PAYPAL_WEBHOOK_ID:''};
 const server=spawn(process.execPath,['server.mjs'],{env,stdio:['ignore','pipe','pipe']});let startup='';server.stderr.on('data',c=>{startup+=c;});
 let cli;
 const stop=()=>{cli?.kill();server.kill();};process.once('SIGINT',()=>{stop();process.exitCode=130;});
