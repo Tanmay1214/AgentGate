@@ -1,0 +1,53 @@
+{
+  "verifiedAt": "2026-11-08T20:38:42.992Z",
+  "environment": "PayPal Sandbox — test money only",
+  "orderId": "0VU946856F2200421",
+  "captureId": "8T920704X5999612M",
+  "purchaseUSD": "30.00",
+  "refundTotalUSD": "30.00",
+  "reservedUSD": "30.00",
+  "checks": [
+    {
+      "check": "Automatic refund",
+      "passed": true,
+      "refundId": "3YR82629TW987361X",
+      "amount": "5.00"
+    },
+    {
+      "check": "Human-approved refund",
+      "passed": true,
+      "refundId": "0HW57321YX756260J",
+      "amount": "25.00"
+    },
+    {
+      "check": "Duplicate returns original operation",
+      "passed": true
+    },
+    {
+      "check": "Over-refund blocked before execution",
+      "passed": true
+    },
+    {
+      "check": "Repeat checkout return after full refund",
+      "passed": true
+    },
+    {
+      "check": "Persistent records and valid audit chain after server restart",
+      "passed": true
+    },
+    {
+      "check": "Genuine signed capture and both refund webhooks received",
+      "passed": true,
+      "eventIds": [
+        "WH-6JP39412X03103635-9H909702KS123320F",
+        "WH-84S96291AU442913G-2L55135316198873K",
+        "WH-8EA170591V272263R-85R227517U0144441"
+      ]
+    }
+  ],
+  "limitations": [
+    "Gemma draft failed during this end-to-end run; refund proposals were entered manually.",
+    "Provider pending, timeout and rejection paths use automated fixtures; not deliberately induced on PayPal.",
+    "Webhook uses a temporary Cloudflare Quick Tunnel."
+  ]
+}
