@@ -1,0 +1,8 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {actionElement,gridRows,statusElement} from '../public/refund-grid.js';
+const doc={createElement(tag){return {tag,children:[],dataset:{},attrs:{},setAttribute(k,v){this.attrs[k]=v;},append(child){this.children.push(child);},set innerHTML(_){throw Error('Untrusted text must not be parsed as HTML');}};}};
+test('status renderer treats unexpected text as text, not markup or CSS',()=>{const value='<img src=x onerror=alert(1)>';const e=statusElement(value,doc);assert.equal(e.textContent,value);assert.equal(e.className,'badge ');});
+test('individual approval controls are only offered on approval requests',()=>{for(const status of ['completed','denied','executing','failed']){const e=actionElement({id:'request-123',amount:2500,status},doc);assert.deepEqual(e.children.map(c=>Object.keys(c.dataset)[0]),['detail']);}const e=actionElement({id:'request-123',amount:2500,status:'approval'},doc);assert.deepEqual(e.children.map(c=>Object.keys(c.dataset)[0]),['detail','approve','reject']);assert.ok(e.children.every(c=>Object.values(c.dataset)[0]==='request-123'));});
+test('uncertain refunds offer reconciliation, not another approval',()=>{const e=actionElement({id:'request-123',amount:500,status:'unknown'},doc);assert.deepEqual(e.children.map(c=>Object.keys(c.dataset)[0]),['detail','reconcile']);});
+test('amounts stay numeric for filtering and source records are not changed',()=>{const r={id:'r',amount:1250,created:'2026-11-10T00:00:00Z'};const row=gridRows([r])[0];assert.equal(row.amountUSD,12.5);assert.ok(row.createdAt instanceof Date);assert.equal(r.amountUSD,undefined);});

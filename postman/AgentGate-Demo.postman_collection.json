@@ -1,0 +1,701 @@
+{
+  "info": {
+    "name": "AgentGate · Demo workflow",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Run npm run test:postman for a disposable local demo server. This collection stops before writes if the target is not in demo mode. It contains no PayPal or AI credentials."
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:4310"
+    },
+    {
+      "key": "session_token",
+      "value": ""
+    },
+    {
+      "key": "demo_run_ready",
+      "value": "false"
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if(pm.request.method!=='GET'){",
+          " if(pm.collectionVariables.get('demo_run_ready')!=='true'){pm.execution.skipRequest();throw new Error('Run the Demo collection from the beginning against a fresh demo server.');}",
+          " pm.sendRequest({url:pm.variables.replaceIn('{{base_url}}/api/state'),method:'GET',header:{'X-AgentGate-Key':pm.collectionVariables.get('session_token')}},(err,res)=>{",
+          "  if(err||res.code!==200||res.json().mode!=='demo'){pm.execution.skipRequest();pm.execution.setNextRequest(null);pm.test('Writes require verified demo mode',()=>{throw new Error('Refusing to modify a sandbox or unavailable server');});}",
+          " });",
+          "}"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "01 · Establish local session",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-AgentGate-Key",
+            "value": "{{session_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/session"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('session_token',pm.response.json().token);pm.collectionVariables.set('demo_run_ready','false');"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 · Verify fresh demo and save policy",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-AgentGate-Key",
+            "value": "{{session_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/state"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "const d=pm.response.json();const ready=d.mode==='demo'&&d.requests.length===0;pm.test('Fresh demo database required',()=>pm.expect(ready).to.equal(true));pm.collectionVariables.set('demo_run_ready',String(ready));if(!ready)pm.execution.setNextRequest(null);pm.collectionVariables.set('run_id',pm.variables.replaceIn('{{$guid}}'));pm.collectionVariables.set('original_policy',JSON.stringify(d.policy));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 · Configure test permissions",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-AgentGate-Key",
+            "value": "{{session_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/policy",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"enabled\": true,\n  \"auto\": 2000,\n  \"daily\": 10000,\n  \"maximum\": 10000\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 · Automatic refund",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-AgentGate-Key",
+            "value": "{{session_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/propose",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"capture\": \"DEMO-1042\",\n  \"amount\": \"12.00\",\n  \"note\": \"Postman synthetic damaged notebook\",\n  \"idem\": \"{{run_id}}-automatic\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "const d=pm.response.json();pm.test('Refund completed automatically',()=>{pm.expect(d.status).to.equal('completed');pm.expect(d.amount).to.equal(1200);pm.expect(d.approved).to.equal(0);pm.expect(d.provider_id).to.match(/^SIM-/);});pm.collectionVariables.set('automatic_id',d.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 · Duplicate returns original refund",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-AgentGate-Key",
+            "value": "{{session_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/propose",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"capture\": \"DEMO-1042\",\n  \"amount\": \"12.00\",\n  \"note\": \"Postman synthetic damaged notebook\",\n  \"idem\": \"{{run_id}}-automatic\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "const d=pm.response.json();pm.test('Same operation, no second refund',()=>{pm.expect(d.duplicate).to.equal(true);pm.expect(d.id).to.equal(pm.collectionVariables.get('automatic_id'));});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 · Altered reuse of request key is rejected",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-AgentGate-Key",
+            "value": "{{session_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/propose",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"capture\": \"DEMO-1042\",\n  \"amount\": \"11.00\",\n  \"note\": \"Postman synthetic damaged notebook\",\n  \"idem\": \"{{run_id}}-automatic\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 400',()=>pm.response.to.have.status(400));",
+              "pm.test('Conflicting details rejected',()=>pm.expect(pm.response.json().error).to.include('different details'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 · Large refund waits for approval",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-AgentGate-Key",
+            "value": "{{session_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/propose",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"capture\": \"DEMO-1043\",\n  \"amount\": \"45.00\",\n  \"note\": \"Postman synthetic returned organiser\",\n  \"idem\": \"{{run_id}}-approval\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "const d=pm.response.json();pm.test('No provider action before approval',()=>{pm.expect(d.status).to.equal('approval');pm.expect(d.provider_id).to.equal(null);});pm.collectionVariables.set('approval_id',d.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 · Inspect budget before approval",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-AgentGate-Key",
+            "value": "{{session_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/state"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Only automatic refund uses allowance',()=>pm.expect(pm.response.json().reserved).to.equal(1200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 · Approve individual request",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-AgentGate-Key",
+            "value": "{{session_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/review",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"id\": \"{{approval_id}}\",\n  \"accept\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "const d=pm.response.json();pm.test('Approved refund completed',()=>{pm.expect(d.status).to.equal('completed');pm.expect(d.approved).to.equal(1);pm.expect(d.amount).to.equal(4500);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 · Unverified payment is blocked",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-AgentGate-Key",
+            "value": "{{session_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/propose",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"capture\": \"DEMO-1045\",\n  \"amount\": \"1.00\",\n  \"note\": \"Postman synthetic unverified return\",\n  \"idem\": \"{{run_id}}-unverified\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Eligibility enforced',()=>{pm.expect(pm.response.json().status).to.equal('denied');pm.expect(pm.response.json().reason).to.equal('CAPTURE_NOT_ELIGIBLE');});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 · Excess refund is blocked",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-AgentGate-Key",
+            "value": "{{session_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/propose",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"capture\": \"DEMO-1042\",\n  \"amount\": \"1.00\",\n  \"note\": \"Postman synthetic excess refund\",\n  \"idem\": \"{{run_id}}-excess\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Original payment cannot be over-refunded',()=>pm.expect(pm.response.json().reason).to.equal('EXCEEDS_REFUNDABLE_AMOUNT'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "12 · Daily budget is enforced",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-AgentGate-Key",
+            "value": "{{session_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/propose",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"capture\": \"DEMO-1044\",\n  \"amount\": \"90.00\",\n  \"note\": \"Postman synthetic budget test\",\n  \"idem\": \"{{run_id}}-budget\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Daily cap blocks additional spend',()=>pm.expect(pm.response.json().reason).to.equal('DAILY_BUDGET_EXCEEDED'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "13 · Invalid money precision is rejected",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-AgentGate-Key",
+            "value": "{{session_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/propose",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"capture\": \"DEMO-1044\",\n  \"amount\": \"1.001\",\n  \"note\": \"Postman invalid money\",\n  \"idem\": \"{{run_id}}-precision\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 400',()=>pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "14 · Revoke agent access",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-AgentGate-Key",
+            "value": "{{session_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/policy",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"enabled\": false,\n  \"auto\": 2000,\n  \"daily\": 10000,\n  \"maximum\": 10000\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "15 · Revoked agent cannot refund",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-AgentGate-Key",
+            "value": "{{session_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/propose",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"capture\": \"DEMO-1044\",\n  \"amount\": \"1.00\",\n  \"note\": \"Postman revoked access test\",\n  \"idem\": \"{{run_id}}-revoked\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Revocation enforced',()=>pm.expect(pm.response.json().reason).to.equal('AGENT_REVOKED'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "16 · Restore original permissions",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-AgentGate-Key",
+            "value": "{{session_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/policy",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"enabled\": true,\n  \"auto\": 2000,\n  \"daily\": 10000,\n  \"maximum\": 10000\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.body.update(pm.collectionVariables.get('original_policy'));"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "17 · Verify final accounting and audit chain",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-AgentGate-Key",
+            "value": "{{session_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/state"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "const d=pm.response.json();pm.test('Exactly two completed refunds',()=>pm.expect(d.requests.filter(r=>r.status==='completed').length).to.equal(2));pm.test('Allowance is $57 and audit chain verifies',()=>{pm.expect(d.reserved).to.equal(5700);pm.expect(d.integrity.valid).to.equal(true);});pm.test('Original policy restored',()=>pm.expect(d.policy).to.deep.equal(JSON.parse(pm.collectionVariables.get('original_policy'))));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "18 · Missing session is rejected",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/state"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 401',()=>pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "19 · Cross-site request is rejected",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-AgentGate-Key",
+            "value": "{{session_token}}"
+          },
+          {
+            "key": "Origin",
+            "value": "https://untrusted.example"
+          }
+        ],
+        "url": "{{base_url}}/api/state"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403',()=>pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

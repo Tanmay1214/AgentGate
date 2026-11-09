@@ -4,14 +4,19 @@ A local merchant control desk for AI-assisted PayPal refunds. The support agent 
 
 ## Run
 
-Requires Node.js 24 or later. No package installation is needed.
+Requires Node.js 24 or later. Install the pinned dependencies before starting.
 
 ```powershell
+npm ci
 Copy-Item .env.example .env
 npm run dev
 ```
 
 Open http://localhost:4310. `npm test` runs the policy and accounting tests.
+
+## Sponsor tools
+
+The refund review screen uses AG Grid Community with search, filters, sorting, pagination and individual review actions. Import the collections under `postman/`, or run `npm run test:postman` for the repeatable demo suite against an isolated database. See [SPONSOR_INTEGRATIONS.md](docs/SPONSOR_INTEGRATIONS.md) for setup, safety gates, Sandbox walkthrough and verification.
 
 ## Connect PayPal
 

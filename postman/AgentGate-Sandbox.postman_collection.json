@@ -1,0 +1,355 @@
+{
+  "info": {
+    "name": "AgentGate · PayPal Sandbox walkthrough",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Read-only by default. Set sandbox_writes_enabled=true to create a test checkout. Open approval_url in a browser and approve with your sandbox Personal buyer, then set buyer_approved=true and run Capture. Set merchant_return_verified=true only after reviewing the synthetic return. No credentials are stored in this collection. Never use live money."
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:4310"
+    },
+    {
+      "key": "session_token",
+      "value": ""
+    },
+    {
+      "key": "refund_request_key",
+      "value": ""
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if(pm.request.method!=='GET'){",
+          " const enabled=pm.variables.get('sandbox_writes_enabled')==='true';",
+          " const approved=pm.variables.get('buyer_approved')==='true';",
+          " const verified=pm.variables.get('merchant_return_verified')==='true';",
+          " const action=pm.request.url.toString().split('/').pop();",
+          " if(!enabled||(['capture'].includes(action)&&!approved)||(['eligibility','propose','review'].includes(action)&&!verified)||(action==='review'&&pm.variables.get('approval_granted')!=='true')){pm.execution.skipRequest();}",
+          " else pm.sendRequest({url:pm.variables.replaceIn('{{base_url}}/api/state'),method:'GET',header:{'X-AgentGate-Key':pm.collectionVariables.get('session_token')}},(err,res)=>{if(err||res.code!==200||res.json().mode!=='sandbox'){pm.execution.skipRequest();pm.execution.setNextRequest(null);pm.test('Writes require sandbox mode',()=>{throw new Error('Wrong environment');});}});",
+          "}"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "01 · Establish local session",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-AgentGate-Key",
+            "value": "{{session_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/session"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('session_token',pm.response.json().token);if(!pm.collectionVariables.get('refund_request_key'))pm.collectionVariables.set('refund_request_key',pm.variables.replaceIn('{{$guid}}'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 · Verify Sandbox connection",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-AgentGate-Key",
+            "value": "{{session_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/state"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('PayPal Sandbox selected',()=>{pm.expect(pm.response.json().mode).to.equal('sandbox');pm.expect(pm.response.json().configured).to.equal(true);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 · Create test checkout — opt in",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-AgentGate-Key",
+            "value": "{{session_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/checkout",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"amount\": \"{{purchase_amount}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "const d=pm.response.json();pm.collectionVariables.set('order_id',d.id);pm.collectionVariables.set('approval_url',d.url);pm.test('PayPal approval URL available',()=>pm.expect(d.url).to.include('sandbox.paypal.com'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 · Capture buyer-approved checkout — manual checkpoint",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-AgentGate-Key",
+            "value": "{{session_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/capture",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"id\": \"{{order_id}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('capture_id',pm.response.json().capture);pm.test('Capture imported',()=>pm.expect(pm.response.json().ok).to.equal(true));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 · Mark reviewed return eligible — manual checkpoint",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-AgentGate-Key",
+            "value": "{{session_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/eligibility",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"id\": \"{{capture_id}}\",\n  \"eligible\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 · Propose sandbox refund — opt in",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-AgentGate-Key",
+            "value": "{{session_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/propose",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"capture\": \"{{capture_id}}\",\n  \"amount\": \"{{refund_amount}}\",\n  \"note\": \"Postman synthetic sandbox return\",\n  \"idem\": \"{{refund_request_key}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "const d=pm.response.json();pm.collectionVariables.set('refund_request_id',d.id);pm.collectionVariables.set('refund_provider_id',d.provider_id||'');pm.test('Refund has a known outcome',()=>pm.expect(['completed','pending','approval']).to.include(d.status));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 · Repeat identical request — no new logical refund",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-AgentGate-Key",
+            "value": "{{session_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/propose",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"capture\": \"{{capture_id}}\",\n  \"amount\": \"{{refund_amount}}\",\n  \"note\": \"Postman synthetic sandbox return\",\n  \"idem\": \"{{refund_request_key}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Duplicate returned original request',()=>{pm.expect(pm.response.json().duplicate).to.equal(true);pm.expect(pm.response.json().id).to.equal(pm.collectionVariables.get('refund_request_id'));});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 · Approve refund — manual checkpoint",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-AgentGate-Key",
+            "value": "{{session_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/review",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"id\": \"{{refund_request_id}}\",\n  \"accept\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('refund_provider_id',pm.response.json().provider_id||'');pm.test('Provider outcome known',()=>pm.expect(['completed','pending']).to.include(pm.response.json().status));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 · Inspect transactions and verified webhook evidence",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-AgentGate-Key",
+            "value": "{{session_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/state"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Audit chain verifies',()=>pm.expect(pm.response.json().integrity.valid).to.equal(true));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

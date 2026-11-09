@@ -1,1 +1,25 @@
-{"name":"agentgate","version":"0.1.0","private":true,"type":"module","scripts":{"dev":"node --env-file-if-exists=.env server.mjs","start":"node --env-file-if-exists=.env server.mjs","test":"node --test test/*.test.mjs"},"engines":{"node":">=24"}}
+{
+  "name": "agentgate",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --env-file-if-exists=.env server.mjs",
+    "start": "node --env-file-if-exists=.env server.mjs",
+    "test": "node --test test/*.test.mjs",
+    "postinstall": "node scripts/prepare-assets.mjs",
+    "predev": "node scripts/prepare-assets.mjs",
+    "prestart": "node scripts/prepare-assets.mjs",
+    "test:postman": "node scripts/run-postman.mjs",
+    "postman:generate": "node scripts/generate-postman.mjs"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "dependencies": {
+    "ag-grid-community": "36.3.0"
+  },
+  "devDependencies": {
+    "postman-cli": "1.87.0"
+  }
+}

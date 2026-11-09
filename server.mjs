@@ -2,12 +2,13 @@ import {executeRefund} from './lib/refund-executor.mjs';
 import {completeCheckout} from './lib/checkout.mjs';
 import {draftRefund,AIServiceError} from './lib/ai-client.mjs';
 import http from 'node:http';
+import {join} from 'node:path';
 import {readFile,mkdir} from 'node:fs/promises';
 import {randomBytes,randomUUID} from 'node:crypto';
 import {store} from './lib/store.mjs';
 import {paypal,providerState,cents} from './lib/paypal.mjs';
 const mode=process.env.PAYPAL_ENV||'demo';if(!['demo','sandbox'].includes(mode))throw Error('Only demo and sandbox environments are supported');
-await mkdir('data',{recursive:true});const s=store(`data/${mode}.sqlite`);const session=randomBytes(32).toString('hex');
+const dataDir=process.env.DATA_DIR||'data';await mkdir(dataDir,{recursive:true});const s=store(join(dataDir,mode+'.sqlite'));const session=randomBytes(32).toString('hex');
 const aiInFlight=new Set();
 const port=Number(process.env.PORT||4310);const origin=process.env.PUBLIC_URL||`http://localhost:${port}`;
 if(mode==='demo')for(const [id,amount,label] of [['DEMO-1042',1200,'Canvas notebook · damaged item'],['DEMO-1043',4500,'Desk organiser · returned'],['DEMO-1044',9000,'Studio headphones · returned'],['DEMO-1045',6000,'Laptop stand · return unverified']])s.run('INSERT OR IGNORE INTO captures VALUES (?,?,?,?,?)',id,amount,'USD',id==='DEMO-1045'?0:1,label);
@@ -61,6 +62,6 @@ try{
   }
   return send(404,{error:'Endpoint not found'});
  }
- const files={'/':'index.html','/checkout-return':'index.html','/app.js':'app.js','/draft-state.js':'draft-state.js','/style.css':'style.css'};const file=files[url.pathname];if(!file)return send(404,{error:'Not found'});const content=await readFile(new URL('./public/'+file,import.meta.url));res.writeHead(200,{'Content-Type':file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':'text/html','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'self'; style-src 'self'; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'"});res.end(content);
+ const files={'/':'index.html','/checkout-return':'index.html','/app.js':'app.js','/draft-state.js':'draft-state.js','/style.css':'style.css','/refund-grid.js':'refund-grid.js','/vendor/ag-grid-community.js':'vendor/ag-grid-community.js','/vendor/ag-grid.css':'vendor/ag-grid.css','/vendor/ag-theme-quartz.css':'vendor/ag-theme-quartz.css'};const file=files[url.pathname];if(!file)return send(404,{error:'Not found'});const content=await readFile(new URL('./public/'+file,import.meta.url));res.writeHead(200,{'Content-Type':file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':'text/html','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; font-src 'self' data:; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'"});res.end(content);
 }catch(e){if(!res.destroyed){if(e.retryAfterSeconds)res.setHeader('Retry-After',String(e.retryAfterSeconds));send(e.httpStatus||400,{error:e.message,...(e.code?{code:e.code}: {})});}}});
 server.listen(port,'127.0.0.1',()=>console.log(`AgentGate (${mode}): http://localhost:${port}`));
