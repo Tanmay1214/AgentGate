@@ -46,6 +46,9 @@ try{
   if(url.pathname==='/api/cases/create')return send(200,cases.create(b));
   if(url.pathname==='/api/cases/return-review')return send(200,cases.recordReturn(b));
   if(url.pathname==='/api/cases/update')return send(200,cases.update(b));
+  if(url.pathname==='/api/cases/reply')return send(200,cases.reply(b));
+  if(url.pathname==='/api/cases/reconsider')return send(200,cases.reconsider(b));
+  if(url.pathname==='/api/cases/evidence')return send(200,cases.importEvidence(b));
   if(url.pathname==='/api/cases/submit')return send(200,await cases.submit(b.id));
   if(url.pathname==='/api/cases/get')return send(200,cases.snapshot(b.id));
   if(url.pathname==='/api/cases/explain')return send(200,await cases.explain(b.id));
@@ -78,6 +81,6 @@ try{
   }
   return send(404,{error:'Endpoint not found'});
  }
- const files={'/':'index.html','/checkout-return':'index.html','/app.js':'app.js','/draft-state.js':'draft-state.js','/style.css':'style.css','/case-workspace.js':'case-workspace.js','/review-panel.js':'review-panel.js','/refund-grid.js':'refund-grid.js','/vendor/ag-grid-community.js':'vendor/ag-grid-community.js','/vendor/ag-grid.css':'vendor/ag-grid.css','/vendor/ag-theme-quartz.css':'vendor/ag-theme-quartz.css'};const file=files[url.pathname];if(!file)return send(404,{error:'Not found'});const content=await readFile(new URL('./public/'+file,import.meta.url));res.writeHead(200,{'Content-Type':file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':'text/html','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; font-src 'self' data:; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'"});res.end(content);
+ const files={'/':'index.html','/checkout-return':'index.html','/app.js':'app.js','/draft-state.js':'draft-state.js','/style.css':'style.css','/case-workspace.js':'case-workspace.js','/review-panel.js':'review-panel.js','/merchant-labels.js':'merchant-labels.js','/evidence-form.js':'evidence-form.js','/refund-grid.js':'refund-grid.js','/vendor/ag-grid-community.js':'vendor/ag-grid-community.js','/vendor/ag-grid.css':'vendor/ag-grid.css','/vendor/ag-theme-quartz.css':'vendor/ag-theme-quartz.css'};const file=files[url.pathname];if(!file)return send(404,{error:'Not found'});const content=await readFile(new URL('./public/'+file,import.meta.url));res.writeHead(200,{'Content-Type':file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':'text/html','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; font-src 'self' data:; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'"});res.end(content);
 }catch(e){if(!res.destroyed){if(e.retryAfterSeconds)res.setHeader('Retry-After',String(e.retryAfterSeconds));send(e.httpStatus||400,{error:e.message,...(e.code?{code:e.code}: {})});}}});
 server.listen(port,'127.0.0.1',()=>console.log(`AgentGate (${mode}): http://localhost:${port}`));

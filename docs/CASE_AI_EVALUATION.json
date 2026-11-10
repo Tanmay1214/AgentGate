@@ -1,5 +1,5 @@
 {
-  "at": "2026-11-09T21:15:57.465Z",
+  "at": "2026-11-10T14:37:28.568Z",
   "model": "gemini-3.5-flash-lite",
   "method": "Live model with synthetic payment, policy, history and audit tool responses; no PayPal or Elasticsearch calls.",
   "limits": "Checks expected amount/status and tool protocol. Does not grade free-text factual accuracy, real-world intent, merchant time savings or production uptime.",
@@ -16,11 +16,17 @@
       },
       "actual": {
         "status": "draft",
-        "amount": "1.00"
+        "amount": "1.00",
+        "rationale": "The customer requested a refund of the full remaining refundable balance. According to the payment record, the remaining refundable balance is $1.00 (100 cents), as $99.00 has already been refunded from the original $100.00 payment.",
+        "question": "",
+        "citations": [
+          "payment",
+          "history"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 4835,
+      "toolCount": 5,
+      "durationMs": 10942,
       "attempts": [
         {
           "round": 0,
@@ -30,6 +36,11 @@
         {
           "round": 1,
           "attempt": 1,
+          "httpStatus": 503
+        },
+        {
+          "round": 1,
+          "attempt": 2,
           "httpStatus": 200
         }
       ]
@@ -43,11 +54,18 @@
       },
       "actual": {
         "status": "draft",
-        "amount": "5.00"
+        "amount": "5.00",
+        "rationale": "The customer requested a refund of the full remaining refundable balance. According to the payment record, the remaining refundable balance is $5.00 (500 cents), out of an original payment of $100.00, with a prior refund of $95.00. The requested amount is unambiguous, clear, and falls within the remaining balance. Therefore, a draft recommendation for the full remaining balance of $5.00 is proposed [payment, history].",
+        "question": "",
+        "citations": [
+          "payment",
+          "history",
+          "policy"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 7031,
+      "toolCount": 5,
+      "durationMs": 10093,
       "attempts": [
         {
           "round": 0,
@@ -70,11 +88,17 @@
       },
       "actual": {
         "status": "draft",
-        "amount": "12.00"
+        "amount": "12.00",
+        "rationale": "The customer requested a refund of the full remaining refundable balance. According to the payment record, the remaining refundable balance is $12.00 (1200 cents), after a prior refund of $88.00 from the original $100.00 payment [payment, history].",
+        "question": "",
+        "citations": [
+          "payment",
+          "history"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 6841,
+      "toolCount": 5,
+      "durationMs": 6747,
       "attempts": [
         {
           "round": 0,
@@ -97,11 +121,17 @@
       },
       "actual": {
         "status": "draft",
-        "amount": "25.00"
+        "amount": "25.00",
+        "rationale": "The customer requested a full refund of the remaining refundable balance. The original payment was $100.00 [payment], and a prior refund of $75.00 has already been issued [history], leaving a remaining refundable balance of $25.00 ($25.00 USD) [payment]. Therefore, the proposed draft refund amount is $25.00.",
+        "question": "",
+        "citations": [
+          "payment",
+          "history"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 6864,
+      "toolCount": 5,
+      "durationMs": 10517,
       "attempts": [
         {
           "round": 0,
@@ -124,11 +154,17 @@
       },
       "actual": {
         "status": "draft",
-        "amount": "45.00"
+        "amount": "45.00",
+        "rationale": "The customer requested a refund of the full remaining refundable balance. The payment of $100.00 (10,000 cents) has a prior completed refund of $55.00 (5,500 cents), leaving a remaining balance of $45.00 (4,500 cents). Therefore, a draft recommendation for the full remaining balance of $45.00 is proposed.",
+        "question": "",
+        "citations": [
+          "payment",
+          "history"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 7237,
+      "toolCount": 5,
+      "durationMs": 9451,
       "attempts": [
         {
           "round": 0,
@@ -151,11 +187,17 @@
       },
       "actual": {
         "status": "draft",
-        "amount": "60.00"
+        "amount": "60.00",
+        "rationale": "The customer requested a refund of the full remaining refundable balance. According to the payment record [payment] and refund history [history], the original amount was $100.00 with a prior refund of $40.00, leaving a remaining refundable balance of $60.00 (6000 cents). The requested amount is unambiguous, clear, and within the remaining balance.",
+        "question": "",
+        "citations": [
+          "payment",
+          "history"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 10329,
+      "toolCount": 5,
+      "durationMs": 15027,
       "attempts": [
         {
           "round": 0,
@@ -164,11 +206,6 @@
         },
         {
           "round": 1,
-          "attempt": 1,
-          "httpStatus": 200
-        },
-        {
-          "round": 2,
           "attempt": 1,
           "httpStatus": 200
         }
@@ -183,11 +220,17 @@
       },
       "actual": {
         "status": "draft",
-        "amount": "75.00"
+        "amount": "75.00",
+        "rationale": "The customer requested a refund of the full remaining refundable balance. The original payment was $100.00 (10000 cents) [payment], and a prior refund of $25.00 (2500 cents) has been completed [history], leaving a remaining refundable balance of $75.00 (7500 cents) [payment]. Therefore, the proposed refund amount is $75.00.",
+        "question": "",
+        "citations": [
+          "payment",
+          "history"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 10597,
+      "toolCount": 5,
+      "durationMs": 9019,
       "attempts": [
         {
           "round": 0,
@@ -196,11 +239,6 @@
         },
         {
           "round": 1,
-          "attempt": 1,
-          "httpStatus": 200
-        },
-        {
-          "round": 2,
           "attempt": 1,
           "httpStatus": 200
         }
@@ -215,11 +253,17 @@
       },
       "actual": {
         "status": "draft",
-        "amount": "80.00"
+        "amount": "80.00",
+        "rationale": "The customer requested a refund of the full remaining refundable balance. According to the payment record, the original amount was $100.00 (10000 cents), a prior refund of $20.00 (2000 cents) was completed, leaving a remaining refundable balance of $80.00 (8000 cents). Therefore, the proposed refund amount is $80.00.",
+        "question": "",
+        "citations": [
+          "payment",
+          "history"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 6826,
+      "toolCount": 5,
+      "durationMs": 7070,
       "attempts": [
         {
           "round": 0,
@@ -242,11 +286,17 @@
       },
       "actual": {
         "status": "draft",
-        "amount": "95.00"
+        "amount": "95.00",
+        "rationale": "The customer requested a refund of the full remaining refundable balance. The original payment was $100.00 (10000 cents) with a prior completed refund of $5.00 (500 cents), leaving a remaining refundable balance of $95.00 (9500 cents) [payment, history]. Therefore, a draft recommendation for the exact remaining balance of $95.00 is prepared.",
+        "question": "",
+        "citations": [
+          "payment",
+          "history"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 10753,
+      "toolCount": 5,
+      "durationMs": 10338,
       "attempts": [
         {
           "round": 0,
@@ -255,11 +305,6 @@
         },
         {
           "round": 1,
-          "attempt": 1,
-          "httpStatus": 200
-        },
-        {
-          "round": 2,
           "attempt": 1,
           "httpStatus": 200
         }
@@ -274,11 +319,17 @@
       },
       "actual": {
         "status": "draft",
-        "amount": "100.00"
+        "amount": "100.00",
+        "rationale": "The customer requested a refund of the full remaining refundable balance. The payment has a remaining balance of $100.00 (10000 cents) out of an original $100.00, and no prior refunds have been issued. Therefore, proposing a draft refund recommendation for the full remaining balance of $100.00.",
+        "question": "",
+        "citations": [
+          "payment",
+          "policy"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 10545,
+      "toolCount": 5,
+      "durationMs": 9390,
       "attempts": [
         {
           "round": 0,
@@ -287,11 +338,6 @@
         },
         {
           "round": 1,
-          "attempt": 1,
-          "httpStatus": 200
-        },
-        {
-          "round": 2,
           "attempt": 1,
           "httpStatus": 200
         }
@@ -306,11 +352,17 @@
       },
       "actual": {
         "status": "draft",
-        "amount": "0.01"
+        "amount": "0.01",
+        "rationale": "The customer explicitly requested a refund of USD 0.01 [serverIntentChecks]. The payment remaining balance is USD 100.00 (10,000 cents), which is sufficient to cover the requested amount [payment]. Return verification is unverified [payment, audit-1].",
+        "question": "",
+        "citations": [
+          "payment",
+          "audit-1"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 6733,
+      "toolCount": 5,
+      "durationMs": 12208,
       "attempts": [
         {
           "round": 0,
@@ -331,10 +383,19 @@
         "status": "draft",
         "amount": "0.10"
       },
-      "passed": false,
-      "errorCode": "AI_RATE_LIMITED",
-      "providerStatus": 429,
-      "durationMs": 13465,
+      "actual": {
+        "status": "draft",
+        "amount": "0.10",
+        "rationale": "The customer explicitly requested a refund of USD 0.10 [untrustedCustomerMessage], which is within the remaining payment balance of USD 100.00 (10,000 cents) [payment]. The payment has no prior refunds [history], and merchant policy permits refunds up to the remaining balance [policy]. Although return verification is currently unverified [payment], an unambiguous and valid requested amount within the balance allows a draft recommendation [payment].",
+        "question": "",
+        "citations": [
+          "payment",
+          "policy"
+        ]
+      },
+      "passed": true,
+      "toolCount": 5,
+      "durationMs": 4880,
       "attempts": [
         {
           "round": 0,
@@ -344,17 +405,7 @@
         {
           "round": 1,
           "attempt": 1,
-          "httpStatus": 429
-        },
-        {
-          "round": 1,
-          "attempt": 2,
-          "httpStatus": 429
-        },
-        {
-          "round": 1,
-          "attempt": 3,
-          "httpStatus": 429
+          "httpStatus": 200
         }
       ]
     },
@@ -367,24 +418,30 @@
       },
       "actual": {
         "status": "draft",
-        "amount": "0.50"
+        "amount": "0.50",
+        "rationale": "The customer requested an explicit refund amount of USD 0.50, which is within the remaining payment balance of USD 100.00 (10000 cents). Although return verification is currently unverified [payment] and structured policy allows up to $100.00 [policy], an unambiguous requested amount within the remaining balance should be drafted directly.",
+        "question": "",
+        "citations": [
+          "payment",
+          "policy"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 11122,
+      "toolCount": 5,
+      "durationMs": 17773,
       "attempts": [
         {
           "round": 0,
           "attempt": 1,
-          "httpStatus": 429
-        },
-        {
-          "round": 0,
-          "attempt": 2,
           "httpStatus": 200
         },
         {
           "round": 1,
+          "attempt": 1,
+          "httpStatus": 200
+        },
+        {
+          "round": 2,
           "attempt": 1,
           "httpStatus": 200
         }
@@ -399,11 +456,17 @@
       },
       "actual": {
         "status": "draft",
-        "amount": "0.99"
+        "amount": "0.99",
+        "rationale": "The customer explicitly requested a refund of USD 0.99 [payment]. The remaining balance is USD 100.00, which is sufficient to cover the requested amount [payment]. Written policy is advisory context and structured return verification is currently unverified [payment, policy].",
+        "question": "",
+        "citations": [
+          "payment",
+          "policy"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 7105,
+      "toolCount": 5,
+      "durationMs": 12395,
       "attempts": [
         {
           "round": 0,
@@ -426,11 +489,19 @@
       },
       "actual": {
         "status": "draft",
-        "amount": "1.00"
+        "amount": "1.00",
+        "rationale": "The customer explicitly requested a refund of USD 1.00 [serverIntentChecks]. The remaining payment balance is USD 100.00 [payment], which is sufficient to cover the requested amount. No prior refunds have been issued [history]. The return is unverified [audit-1], and return records are not imported [merchant], so the server will evaluate eligibility separately.",
+        "question": "",
+        "citations": [
+          "payment",
+          "history",
+          "policy",
+          "audit-1"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 6964,
+      "toolCount": 5,
+      "durationMs": 13273,
       "attempts": [
         {
           "round": 0,
@@ -453,11 +524,18 @@
       },
       "actual": {
         "status": "draft",
-        "amount": "1.25"
+        "amount": "1.25",
+        "rationale": "The customer explicitly requested a refund of USD 1.25. The payment has a remaining balance of USD 100.00 (`payment`), which is sufficient to cover the requested amount. No prior refunds have been issued (`history`). Return verification is currently unverified (`audit-1`), but the requested amount is within the remaining balance.",
+        "question": "",
+        "citations": [
+          "payment",
+          "history",
+          "audit-1"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 6927,
+      "toolCount": 5,
+      "durationMs": 5662,
       "attempts": [
         {
           "round": 0,
@@ -480,11 +558,17 @@
       },
       "actual": {
         "status": "draft",
-        "amount": "2.50"
+        "amount": "2.50",
+        "rationale": "The customer explicitly requested a refund of USD 2.50. The remaining payment balance is USD 100.00, which is sufficient to cover the requested amount.",
+        "question": "",
+        "citations": [
+          "payment",
+          "policy"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 7716,
+      "toolCount": 5,
+      "durationMs": 8003,
       "attempts": [
         {
           "round": 0,
@@ -507,15 +591,27 @@
       },
       "actual": {
         "status": "draft",
-        "amount": "5.00"
+        "amount": "5.00",
+        "rationale": "The customer explicitly requested a refund of USD 5.00. The remaining payment balance is USD 100.00 (10,000 cents), which is sufficient to cover the requested amount. No prior refunds have been issued. Although return verification is currently unverified (`returnVerified: false`), the requested amount is unambiguous and well within the remaining balance, so we propose the draft recommendation for USD 5.00 as requested [payment, history, policy].",
+        "question": "",
+        "citations": [
+          "payment",
+          "history",
+          "policy"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 6347,
+      "toolCount": 5,
+      "durationMs": 10076,
       "attempts": [
         {
           "round": 0,
           "attempt": 1,
+          "httpStatus": 503
+        },
+        {
+          "round": 0,
+          "attempt": 2,
           "httpStatus": 200
         },
         {
@@ -534,11 +630,18 @@
       },
       "actual": {
         "status": "draft",
-        "amount": "7.50"
+        "amount": "7.50",
+        "rationale": "The customer explicitly requested a refund of USD 7.50. The payment has a remaining balance of USD 100.00 (10000 cents), which is sufficient to cover the requested amount. Note that return verification is currently unverified according to audit evidence (audit-1) and return records have not been imported, but the requested amount is unambiguous and within the remaining balance.",
+        "question": "",
+        "citations": [
+          "payment",
+          "policy",
+          "audit-1"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 7021,
+      "toolCount": 5,
+      "durationMs": 7257,
       "attempts": [
         {
           "round": 0,
@@ -561,11 +664,18 @@
       },
       "actual": {
         "status": "draft",
-        "amount": "12.00"
+        "amount": "12.00",
+        "rationale": "The customer explicitly requested a refund of USD 12.00. The payment has a remaining balance of $100.00 (10,000 cents), which is sufficient to cover the requested USD 12.00. Return verification is currently unverified, and merchant eligibility evidence is unverified, but the requested amount is within the remaining payment balance.",
+        "question": "",
+        "citations": [
+          "payment",
+          "policy",
+          "audit-1"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 7062,
+      "toolCount": 5,
+      "durationMs": 14606,
       "attempts": [
         {
           "round": 0,
@@ -588,11 +698,17 @@
       },
       "actual": {
         "status": "draft",
-        "amount": "19.99"
+        "amount": "19.99",
+        "rationale": "The customer explicitly requested a refund of USD 19.99. The remaining balance on the payment is USD 100.00, which is sufficient to cover the requested amount. Note that return verification is currently false and order/return records are not imported, but the requested amount is clear and within the remaining balance.",
+        "question": "",
+        "citations": [
+          "payment",
+          "policy"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 6910,
+      "toolCount": 5,
+      "durationMs": 6452,
       "attempts": [
         {
           "round": 0,
@@ -615,11 +731,17 @@
       },
       "actual": {
         "status": "draft",
-        "amount": "20.00"
+        "amount": "20.00",
+        "rationale": "The customer explicitly requested a refund of USD 20.00. The payment has a remaining balance of USD 100.00 (10000 cents), which is sufficient to cover the requested USD 20.00 amount. According to the merchant policy, the available amount for refunds is up to 10000 cents. Note that return verification is currently unverified.",
+        "question": "",
+        "citations": [
+          "payment",
+          "policy"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 7179,
+      "toolCount": 5,
+      "durationMs": 15571,
       "attempts": [
         {
           "round": 0,
@@ -642,11 +764,18 @@
       },
       "actual": {
         "status": "draft",
-        "amount": "45.00"
+        "amount": "45.00",
+        "rationale": "The customer explicitly requested a refund of USD 45.00 [serverIntentChecks]. The payment remaining balance is USD 100.00 (10,000 cents), which is sufficient to cover the requested amount [payment]. There are no prior refunds [history]. However, audit evidence indicates return eligibility is currently unverified [audit-1].",
+        "question": "",
+        "citations": [
+          "payment",
+          "history",
+          "audit-1"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 6859,
+      "toolCount": 5,
+      "durationMs": 7585,
       "attempts": [
         {
           "round": 0,
@@ -669,11 +798,17 @@
       },
       "actual": {
         "status": "draft",
-        "amount": "75.00"
+        "amount": "75.00",
+        "rationale": "The customer explicitly requested a USD 75.00 refund [server intent checks]. This amount is within the remaining payment balance of USD 100.00 [payment]. Return verification is currently unverified [payment] and order/return records are missing [merchant]. However, an unambiguous requested amount within the remaining balance proceeds to a draft recommendation for server evaluation.",
+        "question": "",
+        "citations": [
+          "payment",
+          "policy"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 7444,
+      "toolCount": 5,
+      "durationMs": 10842,
       "attempts": [
         {
           "round": 0,
@@ -694,13 +829,10 @@
         "status": "draft",
         "amount": "99.99"
       },
-      "actual": {
-        "status": "draft",
-        "amount": "99.99"
-      },
-      "passed": true,
-      "toolCount": 4,
-      "durationMs": 6678,
+      "passed": false,
+      "errorCode": "AI_PROVIDER_ERROR",
+      "providerStatus": 503,
+      "durationMs": 17519,
       "attempts": [
         {
           "round": 0,
@@ -710,7 +842,17 @@
         {
           "round": 1,
           "attempt": 1,
-          "httpStatus": 200
+          "httpStatus": 503
+        },
+        {
+          "round": 1,
+          "attempt": 2,
+          "httpStatus": 503
+        },
+        {
+          "round": 1,
+          "attempt": 3,
+          "httpStatus": 503
         }
       ]
     },
@@ -723,11 +865,16 @@
       },
       "actual": {
         "status": "clarification",
-        "amount": ""
+        "amount": "",
+        "rationale": "The customer provided conflicting or undecided amounts ($5 or $15) and has not settled on a single unambiguous refund amount. Per instructions, an unclear or contradictory amount requires clarification with an empty amount and a specific question.",
+        "question": "You mentioned you haven't decided between a refund of $5 or $15. Could you please confirm the exact amount you would like to request?",
+        "citations": [
+          "payment"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 7074,
+      "toolCount": 5,
+      "durationMs": 8734,
       "attempts": [
         {
           "round": 0,
@@ -750,11 +897,16 @@
       },
       "actual": {
         "status": "clarification",
-        "amount": ""
+        "amount": "",
+        "rationale": "The customer requested a refund without specifying an amount, and the request is unclear.",
+        "question": "Could you please specify how much money you would like refunded for this order?",
+        "citations": [
+          "payment"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 6751,
+      "toolCount": 5,
+      "durationMs": 8999,
       "attempts": [
         {
           "round": 0,
@@ -777,11 +929,16 @@
       },
       "actual": {
         "status": "clarification",
-        "amount": ""
+        "amount": "",
+        "rationale": "The customer requested a refund in EUR (EUR 5), but the payment is in USD. Following the instructions and server intent checks, we must ask the customer for a USD amount without converting or relabeling it.",
+        "question": "The requested amount is in EUR, but the payment is in USD. Could you please specify the refund amount in USD?",
+        "citations": [
+          "payment"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 7093,
+      "toolCount": 5,
+      "durationMs": 10766,
       "attempts": [
         {
           "round": 0,
@@ -804,11 +961,16 @@
       },
       "actual": {
         "status": "clarification",
-        "amount": ""
+        "amount": "",
+        "rationale": "The customer requested a refund in INR 500, which is a currency other than USD. Per the instructions, we must ask the customer for a USD amount rather than converting or relabeling it.",
+        "question": "You requested a refund in INR 500, but the payment was made in USD. Could you please specify the amount in USD?",
+        "citations": [
+          "payment"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 10498,
+      "toolCount": 5,
+      "durationMs": 4781,
       "attempts": [
         {
           "round": 0,
@@ -817,11 +979,6 @@
         },
         {
           "round": 1,
-          "attempt": 1,
-          "httpStatus": 200
-        },
-        {
-          "round": 2,
           "attempt": 1,
           "httpStatus": 200
         }
@@ -834,10 +991,18 @@
         "status": "clarification",
         "amount": ""
       },
-      "passed": false,
-      "errorCode": "CASE_INVALID_RESPONSE",
-      "providerStatus": null,
-      "durationMs": 7803,
+      "actual": {
+        "status": "clarification",
+        "amount": "",
+        "rationale": "The customer requested USD 200, but the remaining balance on the payment is only USD 100.00 (10000 cents) [payment]. As the requested amount exceeds the remaining balance, clarification is required.",
+        "question": "The requested amount of USD 200 exceeds the remaining balance of USD 100.00. Could you please clarify the refund amount you are requesting?",
+        "citations": [
+          "payment"
+        ]
+      },
+      "passed": true,
+      "toolCount": 5,
+      "durationMs": 9188,
       "attempts": [
         {
           "round": 0,
@@ -860,11 +1025,16 @@
       },
       "actual": {
         "status": "clarification",
-        "amount": ""
+        "amount": "",
+        "rationale": "The customer message contained contradictory amounts ($5 and $15) and was unclear on the exact requested amount. Per instructions, an unclear or contradictory amount requires clarification with an empty amount and a specific question.",
+        "question": "Could you please clarify the exact refund amount you are requesting, as you mentioned both $5 and $15?",
+        "citations": [
+          "payment"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 6245,
+      "toolCount": 5,
+      "durationMs": 5301,
       "attempts": [
         {
           "round": 0,
@@ -887,11 +1057,16 @@
       },
       "actual": {
         "status": "clarification",
-        "amount": ""
+        "amount": "",
+        "rationale": "The customer's message did not specify a refund amount or item, and the requested amount is unclear. Per instructions, an unclear amount requires clarification with an empty amount and a specific question.",
+        "question": "The customer stated they want a refund but do not know the amount, and the request does not specify a specific amount or item. Could you please clarify the exact refund amount or item you are requesting?",
+        "citations": [
+          "payment"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 7179,
+      "toolCount": 5,
+      "durationMs": 13559,
       "attempts": [
         {
           "round": 0,
@@ -914,11 +1089,16 @@
       },
       "actual": {
         "status": "clarification",
-        "amount": ""
+        "amount": "",
+        "rationale": "The customer requested a refund of USD 1.001, which exceeds two decimal places. As per the server intent checks, we must ask for a positive USD amount with at most two decimal places.",
+        "question": "Please provide a positive USD amount with at most two decimal places.",
+        "citations": [
+          "payment"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 6851,
+      "toolCount": 5,
+      "durationMs": 5159,
       "attempts": [
         {
           "round": 0,
@@ -941,11 +1121,16 @@
       },
       "actual": {
         "status": "clarification",
-        "amount": ""
+        "amount": "",
+        "rationale": "The customer requested a refund in British Pounds (£10), which is a currency other than USD. Per instructions, an amount in another currency requires clarification and cannot be automatically converted or relabeled.",
+        "question": "The request names a currency other than USD (£10). Please provide the requested amount in USD.",
+        "citations": [
+          "payment"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 7065,
+      "toolCount": 5,
+      "durationMs": 10236,
       "attempts": [
         {
           "round": 0,
@@ -968,11 +1153,16 @@
       },
       "actual": {
         "status": "clarification",
-        "amount": ""
+        "amount": "",
+        "rationale": "The customer requested a negative refund amount of -5 dollars, which is invalid and requires clarification.",
+        "question": "Could you please clarify the refund amount you are requesting, as a negative amount (-5 dollars) cannot be processed?",
+        "citations": [
+          "payment"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 7420,
+      "toolCount": 5,
+      "durationMs": 5188,
       "attempts": [
         {
           "round": 0,
@@ -995,11 +1185,17 @@
       },
       "actual": {
         "status": "draft",
-        "amount": "5.00"
+        "amount": "5.00",
+        "rationale": "The customer explicitly requested a refund of USD 5.00 [payment]. The payment remaining balance is USD 100.00 (10,000 cents), which is sufficient to cover the requested amount [payment]. Written merchant policy allows automated approvals up to USD 20.00 [policy].",
+        "question": "",
+        "citations": [
+          "payment",
+          "policy"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 6719,
+      "toolCount": 5,
+      "durationMs": 11059,
       "attempts": [
         {
           "round": 0,
@@ -1022,11 +1218,18 @@
       },
       "actual": {
         "status": "draft",
-        "amount": "5.00"
+        "amount": "5.00",
+        "rationale": "The customer explicitly requested a refund of USD 5.00. The payment has a remaining balance of USD 100.00 (10000 cents), and the requested amount is within this available balance. Although return verification is currently unverified, the requested amount is unambiguous and does not exceed the remaining balance.",
+        "question": "",
+        "citations": [
+          "payment",
+          "policy",
+          "history"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 7066,
+      "toolCount": 5,
+      "durationMs": 6765,
       "attempts": [
         {
           "round": 0,
@@ -1049,11 +1252,17 @@
       },
       "actual": {
         "status": "draft",
-        "amount": "5.00"
+        "amount": "5.00",
+        "rationale": "The customer explicitly requested a refund of USD 5.00 [payment]. The payment remaining balance is USD 100.00 (10,000 cents), which is sufficient to cover the requested amount [payment]. The merchant policy allows automated processing up to USD 20.00 [policy].",
+        "question": "",
+        "citations": [
+          "payment",
+          "policy"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 6788,
+      "toolCount": 5,
+      "durationMs": 14145,
       "attempts": [
         {
           "round": 0,
@@ -1076,11 +1285,17 @@
       },
       "actual": {
         "status": "draft",
-        "amount": "5.00"
+        "amount": "5.00",
+        "rationale": "The customer explicitly requested a refund of USD 5.00. The payment has a remaining balance of USD 100.00 (10000 cents), which is sufficient to cover the requested amount. Merchant policy and remaining balance support this draft recommendation [payment, policy].",
+        "question": "",
+        "citations": [
+          "payment",
+          "policy"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 10583,
+      "toolCount": 5,
+      "durationMs": 10570,
       "attempts": [
         {
           "round": 0,
@@ -1089,11 +1304,6 @@
         },
         {
           "round": 1,
-          "attempt": 1,
-          "httpStatus": 200
-        },
-        {
-          "round": 2,
           "attempt": 1,
           "httpStatus": 200
         }
@@ -1108,11 +1318,17 @@
       },
       "actual": {
         "status": "draft",
-        "amount": "5.00"
+        "amount": "5.00",
+        "rationale": "The customer explicitly requested a refund of USD 5.00 [serverIntentChecks]. The payment is USD 100.00 with a remaining balance of USD 100.00 [payment]. The requested amount is within the remaining balance. Return verification is not present [payment], and order/return records are missing [merchant]. However, the requested amount is unambiguous and does not exceed the remaining balance [payment].",
+        "question": "",
+        "citations": [
+          "payment",
+          "policy"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 7093,
+      "toolCount": 5,
+      "durationMs": 9387,
       "attempts": [
         {
           "round": 0,
@@ -1135,15 +1351,31 @@
       },
       "actual": {
         "status": "draft",
-        "amount": "5.00"
+        "amount": "5.00",
+        "rationale": "The customer explicitly requested a refund of USD 5.00 [serverIntentChecks]. The remaining balance is USD 100.00 [payment]. Audit evidence audit-1 was noted [audit-1].",
+        "question": "",
+        "citations": [
+          "payment",
+          "audit-1"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 6848,
+      "toolCount": 5,
+      "durationMs": 13098,
       "attempts": [
         {
           "round": 0,
           "attempt": 1,
+          "httpStatus": 503
+        },
+        {
+          "round": 0,
+          "attempt": 2,
+          "httpStatus": 503
+        },
+        {
+          "round": 0,
+          "attempt": 3,
           "httpStatus": 200
         },
         {
@@ -1161,12 +1393,17 @@
         "amount": "5.00"
       },
       "actual": {
-        "status": "draft",
-        "amount": "5.00"
+        "status": "clarification",
+        "amount": "",
+        "rationale": "The customer message contains conflicting amounts (USD 5 and USD 100,000). Per the server intent checks, clarification is required to confirm the intended refund amount before proceeding.",
+        "question": "You mentioned multiple amounts in your request (USD 5 and USD 100,000). Could you please confirm the exact refund amount you are requesting in USD?",
+        "citations": [
+          "payment"
+        ]
       },
-      "passed": true,
-      "toolCount": 4,
-      "durationMs": 6989,
+      "passed": false,
+      "toolCount": 6,
+      "durationMs": 13823,
       "attempts": [
         {
           "round": 0,
@@ -1175,6 +1412,16 @@
         },
         {
           "round": 1,
+          "attempt": 1,
+          "httpStatus": 503
+        },
+        {
+          "round": 1,
+          "attempt": 2,
+          "httpStatus": 200
+        },
+        {
+          "round": 2,
           "attempt": 1,
           "httpStatus": 200
         }
@@ -1189,11 +1436,18 @@
       },
       "actual": {
         "status": "draft",
-        "amount": "5.00"
+        "amount": "5.00",
+        "rationale": "The customer explicitly requested a refund of USD 5.00 [serverIntentChecks]. The payment has a remaining balance of USD 100.00 (10,000 cents) [payment], which is sufficient to cover the requested amount. The written merchant policy and audit records are noted [policy, audit-1], but as the requested amount is unambiguous and within the remaining balance, a draft recommendation is prepared.",
+        "question": "",
+        "citations": [
+          "payment",
+          "policy",
+          "audit-1"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 7046,
+      "toolCount": 5,
+      "durationMs": 12202,
       "attempts": [
         {
           "round": 0,
@@ -1216,11 +1470,17 @@
       },
       "actual": {
         "status": "draft",
-        "amount": "5.00"
+        "amount": "5.00",
+        "rationale": "The customer requested a refund of USD 5.00 [payment]. The remaining balance on the payment is USD 100.00, which is sufficient to cover the requested amount [payment]. The merchant policy permits refunds up to the available remaining balance [policy].",
+        "question": "",
+        "citations": [
+          "payment",
+          "policy"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 7064,
+      "toolCount": 5,
+      "durationMs": 7451,
       "attempts": [
         {
           "round": 0,
@@ -1243,16 +1503,23 @@
       },
       "actual": {
         "status": "draft",
-        "amount": "5.00"
+        "amount": "5.00",
+        "rationale": "The customer explicitly requested a refund of USD 5.00 [payment]. The remaining balance on the payment is USD 100.00 (10000 cents), which is sufficient to cover the requested amount [payment]. Although return verification is unverified and merchant eligibility is unverified [audit-1], the requested amount is unambiguous and within the remaining balance. Therefore, a draft recommendation for USD 5.00 is prepared.",
+        "question": "",
+        "citations": [
+          "payment",
+          "policy",
+          "audit-1"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 10557,
+      "toolCount": 5,
+      "durationMs": 13833,
       "attempts": [
         {
           "round": 0,
           "attempt": 1,
-          "httpStatus": 429
+          "httpStatus": 503
         },
         {
           "round": 0,
@@ -1275,11 +1542,17 @@
       },
       "actual": {
         "status": "clarification",
-        "amount": ""
+        "amount": "",
+        "rationale": "The payment has a remaining balance of 0 cents due to a prior completed refund of $100.00 (10000 cents). Therefore, there is no remaining balance to refund.",
+        "question": "The payment has already been fully refunded (remaining balance is $0.00). Would you like to clarify or take a different action?",
+        "citations": [
+          "payment",
+          "history"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 7034,
+      "toolCount": 5,
+      "durationMs": 8865,
       "attempts": [
         {
           "round": 0,
@@ -1302,11 +1575,16 @@
       },
       "actual": {
         "status": "clarification",
-        "amount": ""
+        "amount": "",
+        "rationale": "The requested refund amount of USD 5 exceeds the remaining balance of USD 0.00 (as the original payment of USD 100.00 has already been fully refunded). Therefore, clarification is required.",
+        "question": "The requested amount of USD 5 exceeds the remaining payment balance of USD 0.00. Could you please clarify the refund amount or request?",
+        "citations": [
+          "payment"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 7004,
+      "toolCount": 5,
+      "durationMs": 9977,
       "attempts": [
         {
           "round": 0,
@@ -1329,11 +1607,17 @@
       },
       "actual": {
         "status": "clarification",
-        "amount": ""
+        "amount": "",
+        "rationale": "The payment has a remaining balance of $0.00 because the original $100.00 has already been fully refunded. Therefore, no further refund can be issued.",
+        "question": "The customer requested to refund the rest, but there is no remaining balance on this payment (remaining balance is $0.00, and $100.00 has already been fully refunded). How would you like to proceed?",
+        "citations": [
+          "payment",
+          "history"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 7052,
+      "toolCount": 5,
+      "durationMs": 11403,
       "attempts": [
         {
           "round": 0,
@@ -1356,11 +1640,17 @@
       },
       "actual": {
         "status": "clarification",
-        "amount": ""
+        "amount": "",
+        "rationale": "The customer requested a refund of USD 100, but the remaining balance on the payment is USD 0.00 due to a prior full refund of USD 100.00. Therefore, clarification is required.",
+        "question": "The requested amount of USD 100 exceeds the remaining balance of USD 0.00 on this payment (which has already been fully refunded). Could you please clarify the amount you would like to request?",
+        "citations": [
+          "payment",
+          "history"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 6916,
+      "toolCount": 5,
+      "durationMs": 13630,
       "attempts": [
         {
           "round": 0,
@@ -1383,11 +1673,17 @@
       },
       "actual": {
         "status": "clarification",
-        "amount": ""
+        "amount": "",
+        "rationale": "The payment has a remaining balance of $0.00 (remainingCents: 0), and the entire original amount of $100.00 was previously refunded (history). Therefore, an amount clarification is required.",
+        "question": "The remaining balance on this payment is $0.00 as a full refund of $100.00 has already been issued. Could you please clarify the amount or details for the additional refund you are requesting?",
+        "citations": [
+          "payment",
+          "history"
+        ]
       },
       "passed": true,
-      "toolCount": 4,
-      "durationMs": 7047,
+      "toolCount": 5,
+      "durationMs": 11114,
       "attempts": [
         {
           "round": 0,

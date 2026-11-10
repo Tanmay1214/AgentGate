@@ -1,0 +1,23 @@
+{
+  "capture": "DEMO-1045",
+  "currency": "USD",
+  "order": {
+    "reference": "SYNTHETIC-ORDER-1",
+    "purchasedAt": "2026-11-01",
+    "deliveredAt": "2026-11-03",
+    "items": [{"sku": "BLUE", "name": "Blue notebook", "quantity": 2, "unitAmount": "30.00"}]
+  },
+  "return": {
+    "reference": "SYNTHETIC-RETURN-1",
+    "status": "accepted",
+    "receivedAt": "2026-11-08",
+    "items": [{"sku": "BLUE", "quantity": 1}],
+    "notes": "Synthetic example: one notebook inspected. Replace with your merchant records."
+  },
+  "policy": {
+    "reference": "SYNTHETIC-POLICY-v1",
+    "text": "Received items may be refunded within 30 days after delivery at the purchased unit price. Merchant eligibility verification is required.",
+    "windowDays": 30,
+    "requireReceived": true
+  }
+}

@@ -1,0 +1,557 @@
+{
+  "at": "2026-11-10T14:28:01.577Z",
+  "model": "gemini-3.5-flash-lite",
+  "method": "Live model with synthetic payment, policy, history and audit tool responses; no PayPal or Elasticsearch calls.",
+  "limits": "Checks expected amount/status and tool protocol. Does not grade free-text factual accuracy, real-world intent, merchant time savings or production uptime.",
+  "total": 16,
+  "passed": 16,
+  "failed": 0,
+  "results": [
+    {
+      "id": "items-01",
+      "category": "order-return-conversation",
+      "expected": {
+        "status": "draft",
+        "amount": "18.00"
+      },
+      "actual": {
+        "status": "draft",
+        "amount": "18.00",
+        "rationale": "The customer requested a refund for one blue notebook (sku: BLUE) at $18.00 (1800 cents) [merchant]. The payment has a remaining balance of $84.00, and no previous refunds have been issued [payment, history]. The return for one blue notebook was received and inspected [merchant], and return verification is confirmed [payment]. The written policy requires items to be received within 30 days of delivery at their purchased unit price [merchant].",
+        "question": "",
+        "citations": [
+          "payment",
+          "history",
+          "policy",
+          "audit-1",
+          "merchant"
+        ]
+      },
+      "passed": true,
+      "toolCount": 5,
+      "durationMs": 12596,
+      "attempts": [
+        {
+          "round": 0,
+          "attempt": 1,
+          "httpStatus": 200
+        },
+        {
+          "round": 1,
+          "attempt": 1,
+          "httpStatus": 200
+        }
+      ]
+    },
+    {
+      "id": "items-02",
+      "category": "order-return-conversation",
+      "expected": {
+        "status": "draft",
+        "amount": "36.00"
+      },
+      "actual": {
+        "status": "draft",
+        "amount": "36.00",
+        "rationale": "The customer explicitly requested a refund for both blue notebooks, which amounts to $36.00 (2 items at $18.00 each) [payment, merchant]. The payment has a remaining balance of $84.00, which is sufficient to cover the requested amount [payment]. Although the return record shows only one blue notebook was received and inspected [merchant], the requested amount is unambiguous, and policy restrictions do not block drafting an unambiguous item-based refund request.",
+        "question": "",
+        "citations": [
+          "payment",
+          "merchant"
+        ]
+      },
+      "passed": true,
+      "toolCount": 5,
+      "durationMs": 14503,
+      "attempts": [
+        {
+          "round": 0,
+          "attempt": 1,
+          "httpStatus": 200
+        },
+        {
+          "round": 1,
+          "attempt": 1,
+          "httpStatus": 200
+        }
+      ]
+    },
+    {
+      "id": "items-03",
+      "category": "order-return-conversation",
+      "expected": {
+        "status": "draft",
+        "amount": "48.00"
+      },
+      "actual": {
+        "status": "draft",
+        "amount": "48.00",
+        "rationale": "The customer requested a refund for the desk lamp [untrustedCustomerMessage]. The server intent checks identify the desk lamp as the explicit item with a unit price of $48.00 (4800 cents) [serverIntentChecks, merchant]. The remaining payment balance is $84.00 [payment], which is sufficient to cover the requested amount. Note that while written merchant policy requires merchant verification for returned items [policy], and return inspection notes only show the blue notebook was received [merchant], the requested amount is unambiguous and within the remaining balance.",
+        "question": "",
+        "citations": [
+          "payment",
+          "merchant",
+          "policy"
+        ]
+      },
+      "passed": true,
+      "toolCount": 5,
+      "durationMs": 11137,
+      "attempts": [
+        {
+          "round": 0,
+          "attempt": 1,
+          "httpStatus": 200
+        },
+        {
+          "round": 1,
+          "attempt": 1,
+          "httpStatus": 200
+        }
+      ]
+    },
+    {
+      "id": "items-04",
+      "category": "order-return-conversation",
+      "expected": {
+        "status": "draft",
+        "amount": "18.00"
+      },
+      "actual": {
+        "status": "draft",
+        "amount": "18.00",
+        "rationale": "The customer requested a refund for only the returned items listed in the return record. According to the order and return records [merchant], 1 blue notebook (SKU: BLUE) with a unit price of $18.00 (1800 cents) was returned and accepted. The total payment is $84.00 [payment], and no previous refunds have been issued [history]. Therefore, the refund amount for the returned item is $18.00.",
+        "question": "",
+        "citations": [
+          "payment",
+          "merchant",
+          "history"
+        ]
+      },
+      "passed": true,
+      "toolCount": 5,
+      "durationMs": 10920,
+      "attempts": [
+        {
+          "round": 0,
+          "attempt": 1,
+          "httpStatus": 200
+        },
+        {
+          "round": 1,
+          "attempt": 1,
+          "httpStatus": 200
+        }
+      ]
+    },
+    {
+      "id": "items-05",
+      "category": "order-return-conversation",
+      "expected": {
+        "status": "clarification",
+        "amount": ""
+      },
+      "actual": {
+        "status": "clarification",
+        "amount": "",
+        "rationale": "The customer requested a refund for one of the items in the order, but did not specify which item. The order contains two different item types (Blue notebook and Desk lamp) [merchant]. Clarification is required to identify the specific item before proposing an amount [policy].",
+        "question": "You mentioned you would like to refund one of the items in this order, but your order contains multiple items (Blue notebook at $18.00 and Desk lamp at $48.00). Could you please specify which item you would like to refund?",
+        "citations": [
+          "merchant",
+          "policy"
+        ]
+      },
+      "passed": true,
+      "toolCount": 5,
+      "durationMs": 10524,
+      "attempts": [
+        {
+          "round": 0,
+          "attempt": 1,
+          "httpStatus": 200
+        },
+        {
+          "round": 1,
+          "attempt": 1,
+          "httpStatus": 503
+        },
+        {
+          "round": 1,
+          "attempt": 2,
+          "httpStatus": 200
+        }
+      ]
+    },
+    {
+      "id": "items-06",
+      "category": "order-return-conversation",
+      "expected": {
+        "status": "clarification",
+        "amount": ""
+      },
+      "actual": {
+        "status": "clarification",
+        "amount": "",
+        "rationale": "The customer requested a refund for the red notebook, but the order items are only a blue notebook and a desk lamp. Therefore, the item is not identified uniquely and clarification is needed.",
+        "question": "You requested a refund for the red notebook, but the order contains only a blue notebook and a desk lamp. Which item would you like to refund?",
+        "citations": [
+          "merchant",
+          "payment"
+        ]
+      },
+      "passed": true,
+      "toolCount": 5,
+      "durationMs": 12160,
+      "attempts": [
+        {
+          "round": 0,
+          "attempt": 1,
+          "httpStatus": 200
+        },
+        {
+          "round": 1,
+          "attempt": 1,
+          "httpStatus": 200
+        }
+      ]
+    },
+    {
+      "id": "items-07",
+      "category": "order-return-conversation",
+      "expected": {
+        "status": "clarification",
+        "amount": ""
+      },
+      "actual": {
+        "status": "clarification",
+        "amount": "",
+        "rationale": "The customer requested the refund in EUR 18, but the transaction currency is USD. Per server instructions, we must ask the customer for a USD amount rather than converting or relabeling it.",
+        "question": "The customer requested a refund in EUR, but the payment is in USD. Could you please specify the amount in USD?",
+        "citations": [
+          "merchant"
+        ]
+      },
+      "passed": true,
+      "toolCount": 5,
+      "durationMs": 8753,
+      "attempts": [
+        {
+          "round": 0,
+          "attempt": 1,
+          "httpStatus": 200
+        },
+        {
+          "round": 1,
+          "attempt": 1,
+          "httpStatus": 200
+        }
+      ]
+    },
+    {
+      "id": "items-08",
+      "category": "order-return-conversation",
+      "expected": {
+        "status": "draft",
+        "amount": "64.00"
+      },
+      "actual": {
+        "status": "draft",
+        "amount": "64.00",
+        "rationale": "The customer requested a refund of the full remaining payment balance. The original payment was $84.00 [payment] with a prior refund of $20.00 [history], leaving a remaining payment balance of $64.00 [payment]. According to the merchant policy, items must be received and verified, and one return item (Blue notebook, sku: BLUE) has been accepted [merchant]. Therefore, we propose drafting the full remaining payment refund of $64.00 [payment].",
+        "question": "",
+        "citations": [
+          "payment",
+          "history",
+          "merchant",
+          "policy"
+        ]
+      },
+      "passed": true,
+      "toolCount": 5,
+      "durationMs": 11674,
+      "attempts": [
+        {
+          "round": 0,
+          "attempt": 1,
+          "httpStatus": 200
+        },
+        {
+          "round": 1,
+          "attempt": 1,
+          "httpStatus": 200
+        }
+      ]
+    },
+    {
+      "id": "items-09",
+      "category": "order-return-conversation",
+      "expected": {
+        "status": "clarification",
+        "amount": ""
+      },
+      "actual": {
+        "status": "clarification",
+        "amount": "",
+        "rationale": "The requested desk lamp has a unit price of $48.00 [merchant], but the remaining balance on the payment is $30.00 [payment]. Since the requested amount exceeds the remaining balance, clarification is required.",
+        "question": "The requested desk lamp costs $48.00, but the remaining balance on the payment is only $30.00. Which amount would you like to request?",
+        "citations": [
+          "payment",
+          "merchant"
+        ]
+      },
+      "passed": true,
+      "toolCount": 5,
+      "durationMs": 12772,
+      "attempts": [
+        {
+          "round": 0,
+          "attempt": 1,
+          "httpStatus": 200
+        },
+        {
+          "round": 1,
+          "attempt": 1,
+          "httpStatus": 200
+        }
+      ]
+    },
+    {
+      "id": "items-10",
+      "category": "order-return-conversation",
+      "expected": {
+        "status": "draft",
+        "amount": "18.00"
+      },
+      "actual": {
+        "status": "draft",
+        "amount": "18.00",
+        "rationale": "The customer explicitly requested a refund for one blue notebook. According to the order and return records, a blue notebook has a unit price of $18.00, and the return of one blue notebook has been verified and accepted. The requested amount of $18.00 is within the remaining payment balance of $84.00.",
+        "question": "",
+        "citations": [
+          "payment",
+          "merchant"
+        ]
+      },
+      "passed": true,
+      "toolCount": 5,
+      "durationMs": 9688,
+      "attempts": [
+        {
+          "round": 0,
+          "attempt": 1,
+          "httpStatus": 200
+        },
+        {
+          "round": 1,
+          "attempt": 1,
+          "httpStatus": 200
+        }
+      ]
+    },
+    {
+      "id": "items-11",
+      "category": "order-return-conversation",
+      "expected": {
+        "status": "draft",
+        "amount": "48.00"
+      },
+      "actual": {
+        "status": "draft",
+        "amount": "48.00",
+        "rationale": "The customer corrected their request to a specific refund of $48.00 for the desk lamp [payment]. The order includes one desk lamp at a unit price of $48.00 [merchant]. However, merchant policy requires return verification and receipt of items before refunding, and the return evidence shows only one blue notebook was received and inspected, while the desk lamp return has not been verified or received [merchant, policy].",
+        "question": "",
+        "citations": [
+          "payment",
+          "merchant",
+          "policy"
+        ]
+      },
+      "passed": true,
+      "toolCount": 5,
+      "durationMs": 9009,
+      "attempts": [
+        {
+          "round": 0,
+          "attempt": 1,
+          "httpStatus": 200
+        },
+        {
+          "round": 1,
+          "attempt": 1,
+          "httpStatus": 200
+        }
+      ]
+    },
+    {
+      "id": "items-12",
+      "category": "order-return-conversation",
+      "expected": {
+        "status": "draft",
+        "amount": "18.00"
+      },
+      "actual": {
+        "status": "draft",
+        "amount": "18.00",
+        "rationale": "The customer requested a refund for the returned notebook. According to the merchant order and return evidence, 1 unit of the Blue notebook (SKU: BLUE) was returned and verified at a unit price of $18.00 (1800 cents), which is well within the remaining payment balance of $84.00.",
+        "question": "",
+        "citations": [
+          "payment",
+          "merchant"
+        ]
+      },
+      "passed": true,
+      "toolCount": 5,
+      "durationMs": 5656,
+      "attempts": [
+        {
+          "round": 0,
+          "attempt": 1,
+          "httpStatus": 200
+        },
+        {
+          "round": 1,
+          "attempt": 1,
+          "httpStatus": 200
+        }
+      ]
+    },
+    {
+      "id": "items-13",
+      "category": "order-return-conversation",
+      "expected": {
+        "status": "draft",
+        "amount": "10.00"
+      },
+      "actual": {
+        "status": "draft",
+        "amount": "10.00",
+        "rationale": "The customer explicitly requested a $10.00 refund [serverIntentChecks]. The payment has a remaining balance of $84.00, which is sufficient to cover the requested $10.00 amount [payment].",
+        "question": "",
+        "citations": [
+          "payment",
+          "merchant"
+        ]
+      },
+      "passed": true,
+      "toolCount": 5,
+      "durationMs": 13113,
+      "attempts": [
+        {
+          "round": 0,
+          "attempt": 1,
+          "httpStatus": 200
+        },
+        {
+          "round": 1,
+          "attempt": 1,
+          "httpStatus": 200
+        }
+      ]
+    },
+    {
+      "id": "items-14",
+      "category": "order-return-conversation",
+      "expected": {
+        "status": "draft",
+        "amount": "18.00"
+      },
+      "actual": {
+        "status": "draft",
+        "amount": "18.00",
+        "rationale": "The customer explicitly requested a refund for the returned blue notebook. According to the order and return record, the unit price for the blue notebook (SKU: BLUE) is $18.00 (1800 cents) [merchant]. The remaining payment balance is $84.00, which is sufficient to cover the $18.00 refund [payment]. Note that the written policy requires returned items to be received and verified, and current merchant findings indicate that the return has not yet been received [merchant, policy]. However, following the instructions to propose unambiguous requested item amounts within the remaining balance, we draft the refund of $18.00 while noting the return verification status.",
+        "question": "",
+        "citations": [
+          "payment",
+          "merchant",
+          "policy"
+        ]
+      },
+      "passed": true,
+      "toolCount": 5,
+      "durationMs": 9293,
+      "attempts": [
+        {
+          "round": 0,
+          "attempt": 1,
+          "httpStatus": 200
+        },
+        {
+          "round": 1,
+          "attempt": 1,
+          "httpStatus": 200
+        }
+      ]
+    },
+    {
+      "id": "items-15",
+      "category": "order-return-conversation",
+      "expected": {
+        "status": "draft",
+        "amount": "18.00"
+      },
+      "actual": {
+        "status": "draft",
+        "amount": "18.00",
+        "rationale": "The customer requested a refund for the returned blue notebook. According to the order and return records [merchant], one blue notebook was purchased at $18.00 (1800 cents) and successfully returned and inspected. The payment remaining balance is $84.00 [payment], which fully covers the requested $18.00 amount. Although the merchant record indicates the return was received outside the 30-day window [merchant], the requested item and amount are clearly identified and within the remaining payment balance.",
+        "question": "",
+        "citations": [
+          "payment",
+          "merchant"
+        ]
+      },
+      "passed": true,
+      "toolCount": 5,
+      "durationMs": 5079,
+      "attempts": [
+        {
+          "round": 0,
+          "attempt": 1,
+          "httpStatus": 200
+        },
+        {
+          "round": 1,
+          "attempt": 1,
+          "httpStatus": 200
+        }
+      ]
+    },
+    {
+      "id": "items-16",
+      "category": "order-return-conversation",
+      "expected": {
+        "status": "draft",
+        "amount": "18.00"
+      },
+      "actual": {
+        "status": "draft",
+        "amount": "18.00",
+        "rationale": "The customer requested a refund for one blue notebook [untrustedCustomerMessage]. According to the merchant order record, a blue notebook has a unit price of $18.00 (1800 cents) [merchant], and the remaining refundable balance on the payment is $84.00 [payment]. The return of one blue notebook has been verified and accepted [merchant].",
+        "question": "",
+        "citations": [
+          "payment",
+          "merchant"
+        ]
+      },
+      "passed": true,
+      "toolCount": 5,
+      "durationMs": 20210,
+      "attempts": [
+        {
+          "round": 0,
+          "attempt": 1,
+          "httpStatus": 200
+        },
+        {
+          "round": 1,
+          "attempt": 1,
+          "httpStatus": 503
+        },
+        {
+          "round": 1,
+          "attempt": 2,
+          "httpStatus": 200
+        }
+      ]
+    }
+  ]
+}

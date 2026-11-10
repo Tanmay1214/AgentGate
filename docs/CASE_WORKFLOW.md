@@ -2,7 +2,7 @@
 
 Open **Refund cases**, select a payment and enter the customer request. The case is persisted separately from refund requests. Opening or investigating a case does not call PayPal.
 
-The Gemini investigator uses four read-only tools: retrieve payment and merchant return status, retrieve prior refunds, retrieve current limits and allowance, and search audit evidence. Tool calls are restricted to the case's selected payment. It must retrieve all four sources before finishing with a cited draft or a clarification question. The model cannot change eligibility, limits, approvals or provider outcomes.
+The Gemini investigator uses five read-only tools: retrieve payment and merchant return status, retrieve prior refunds, retrieve current limits and allowance, search audit evidence, and read imported order/return records. Tool calls are restricted to the case's selected payment. It must retrieve all four sources before finishing with a cited draft or a clarification question. The model cannot change eligibility, limits, approvals or provider outcomes.
 
 Record a merchant return review with a reference to your inspected return record when appropriate. This is an explicit merchant action, not an inference from the customer's text. Existing verified captures remain usable without a newly recorded reference; the screen distinguishes them.
 
@@ -18,7 +18,7 @@ The case recommendation includes a model-written rationale with validated citati
 
 ## AI limits and data flow
 
-Investigations use the configured Gemini model with a 90-second overall deadline, at most seven model rounds and three attempts per round for transient failures. The model only has the four read-only tools and a final recommendation tool. A final recommendation that fails validation receives one corrective tool response and may be regenerated once. It still must pass the same amount, clarification and citation checks; a second invalid recommendation fails closed. Incomplete tool protocols and unsupported arguments fail closed. Cancelling the request or navigating away cancels the investigation where supported; edits invalidate a late response even if upstream cancellation fails.
+Investigations use the configured Gemini model with a 90-second overall deadline, at most seven model rounds and three attempts per round for transient failures. The model only has the five read-only tools and a final recommendation tool. A final recommendation that fails validation receives one corrective tool response and may be regenerated once. It still must pass the same amount, clarification and citation checks; a second invalid recommendation fails closed. Incomplete tool protocols and unsupported arguments fail closed. Cancelling the request or navigating away cancels the investigation where supported; edits invalidate a late response even if upstream cancellation fails.
 
 Gemini receives the customer request and retrieved operational facts, including the selected payment ID, sanitized refund history, merchant return reference, limits and sanitized audit citations. Credentials and raw audit bodies are not included. Elastic continues to receive operational metadata only; customer text and return references are excluded from its index. A valid citation does not prove that every sentence of a model's explanation is accurate; the merchant can inspect the underlying evidence.
 
@@ -37,3 +37,7 @@ Investigations record elapsed time in each case. This is the measured AI investi
 The paced full live-model run passed 48/50 labeled cases. One failed with HTTP 429 after bounded retries. One produced an invalid clarification containing an amount and no question; validation rejected it. No failed case produced an actionable proposal. The invalid-clarification investigation led to a single bounded correction round, still subject to the same validator. A targeted live follow-up of those two failing examples passed 2/2; that follow-up is not a rerun of the entire 50-case set. The three unnecessary clarification examples from the baseline passed in the paced run. These are development fixtures, not an independently held-out benchmark.
 
 Browser checks used live Gemini and Elastic with disposable simulated payments: a reviewed $45 case waited for merchant approval before completion; a $12 case completed through the automatic policy path. Both persisted across reload. Decision explanations retrieved verified audit citations. No new PayPal Sandbox purchase or refund was made for these checks.
+
+## Order evidence and recovery update
+
+See [ORDER_RETURN_WORKFLOW.md](ORDER_RETURN_WORKFLOW.md) for merchant records, conservative intent checks, clarification replies and linked follow-up cases. Older verification results above describe the original four-source implementation.

@@ -20,6 +20,12 @@ Open **Refund cases** to record a customer request and merchant return review. G
 
 The review grid has named approval, uncertain-outcome and blocked-request queues, plus a payment/evidence detail pane. `npm run eval:cases` evaluates 50 labeled synthetic scenarios against the configured live model; it does not call PayPal.
 
+## Order evidence and case recovery
+
+Import order items, return status and written policy from a JSON file or the merchant form. Gemini calculates item-specific recommendations and asks for missing information; the server enforces structured return rules and the returned-item ceiling. Customer replies remain in the case conversation. A blocked request can open one linked follow-up without rewriting the original decision. See [ORDER_RETURN_WORKFLOW.md](docs/ORDER_RETURN_WORKFLOW.md) for the import example, safeguards and live evaluation scope.
+
+`npm run eval:cases -- --suite=evidence` runs the 16-scenario evidence/conversation evaluation. Merchant records are supplied locally, not fetched from an ecommerce connector. No additional API key is needed.
+
 ## Sponsor tools
 
 The refund review screen uses AG Grid Community with search, filters, sorting, pagination and individual review actions. Import the collections under `postman/`, or run `npm run test:postman` for the repeatable demo suite against an isolated database. See [SPONSOR_INTEGRATIONS.md](docs/SPONSOR_INTEGRATIONS.md) for setup, safety gates, Sandbox walkthrough and verification.

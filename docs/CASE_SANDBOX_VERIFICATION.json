@@ -1,0 +1,50 @@
+{
+  "verifiedAt": "2026-11-10T14:37:28.673Z",
+  "environment": "PayPal Sandbox - test money only",
+  "caseId": "18a61cfd-2c7f-4055-ad12-5713d4737973",
+  "captureId": "09948298MA898591X",
+  "paymentUSD": "12.00",
+  "refundId": "9Y196048NL884644D",
+  "refundUSD": "6.00",
+  "remainingUSD": "6.00",
+  "model": "gemini-3.5-flash-lite",
+  "investigationMs": 20804,
+  "citations": [
+    "payment",
+    "merchant",
+    "audit-18"
+  ],
+  "tools": [
+    {
+      "tool": "get_payment",
+      "source": "local"
+    },
+    {
+      "tool": "get_refund_history",
+      "source": "local"
+    },
+    {
+      "tool": "get_merchant_policy",
+      "source": "local"
+    },
+    {
+      "tool": "search_audit_evidence",
+      "source": "elastic-verified",
+      "count": 4
+    },
+    {
+      "tool": "get_order_and_return",
+      "source": "local"
+    }
+  ],
+  "providerStatus": "COMPLETED",
+  "auditValid": true,
+  "captureWebhook": false,
+  "refundWebhook": false,
+  "webhooks": [],
+  "limitations": [
+    "Order items, return inspection and policy are explicitly synthetic merchant records for the test purchase.",
+    "This verifies one live-model automatic refund on PayPal Sandbox, not production payment readiness or a live-model high-value approval flow.",
+    "Webhook-only Cloudflare Quick Tunnel is temporary."
+  ]
+}

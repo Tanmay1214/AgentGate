@@ -1,3 +1,4 @@
+import {decisionLabel,statusLabel,eventLabel} from './merchant-labels.js';
 const allowed=new Set(['approval','completed','denied','executing','pending','unknown','failed']);
 const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(n/100);
 export function gridRows(requests){return requests.map(r=>({...r,amountUSD:r.amount/100,createdAt:new Date(r.created)}));}
@@ -25,7 +26,7 @@ export function mountRefundGrid(requests,onSelect=()=>{}){
    {field:'capture',headerName:'Payment',minWidth:190,flex:1},
    {field:'amountUSD',headerName:'Amount · USD',filter:'agNumberColumnFilter',width:150,valueFormatter:p=>money(Math.round(p.value*100))},
    {field:'status',headerName:'Status',width:170,cellRenderer:p=>statusElement(p.value)},
-   {field:'reason',headerName:'Policy decision',minWidth:235,flex:1},
+   {field:'reason',headerName:'Policy decision',valueFormatter:p=>decisionLabel(p.value),getQuickFilterText:p=>decisionLabel(p.value),minWidth:235,flex:1},
    {field:'createdAt',headerName:'Requested',filter:'agDateColumnFilter',width:185,valueFormatter:p=>p.value.toLocaleString(),sort:'desc'},
    {field:'id',headerName:'Request ID',width:310,hide:true},
    {field:'note',headerName:'Customer request',minWidth:260,hide:true,wrapText:true,autoHeight:true},
