@@ -1,5 +1,5 @@
 {
-  "verifiedAt": "2026-11-10T14:37:28.673Z",
+  "verifiedAt": "2026-11-10T19:34:05.504Z",
   "environment": "PayPal Sandbox - test money only",
   "caseId": "18a61cfd-2c7f-4055-ad12-5713d4737973",
   "captureId": "09948298MA898591X",
@@ -39,9 +39,22 @@
   ],
   "providerStatus": "COMPLETED",
   "auditValid": true,
-  "captureWebhook": false,
-  "refundWebhook": false,
-  "webhooks": [],
+  "captureWebhook": true,
+  "refundWebhook": true,
+  "webhooks": [
+    {
+      "eventId": "WH-5XM47511X9350104F-41488544ME070203T",
+      "type": "PAYMENT.CAPTURE.COMPLETED",
+      "resourceId": "09948298MA898591X",
+      "seq": 27
+    },
+    {
+      "eventId": "WH-2XF939144E8719227-9UA51106RP6045416",
+      "type": "PAYMENT.CAPTURE.REFUNDED",
+      "resourceId": "9Y196048NL884644D",
+      "seq": 26
+    }
+  ],
   "limitations": [
     "Order items, return inspection and policy are explicitly synthetic merchant records for the test purchase.",
     "This verifies one live-model automatic refund on PayPal Sandbox, not production payment readiness or a live-model high-value approval flow.",
