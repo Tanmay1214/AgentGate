@@ -12,15 +12,19 @@
     "prestart": "node scripts/prepare-assets.mjs",
     "test:postman": "node scripts/run-postman.mjs",
     "postman:generate": "node scripts/generate-postman.mjs",
-    "eval:cases": "node --env-file-if-exists=.env scripts/evaluate-case-ai.mjs --live"
+    "eval:cases": "node --env-file-if-exists=.env scripts/evaluate-case-ai.mjs --live",
+    "test:ui": "playwright test"
   },
   "engines": {
     "node": ">=24"
   },
   "dependencies": {
+    "@fontsource-variable/geist": "5.3.0",
     "ag-grid-community": "36.3.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@playwright/test": "^1.65.0",
     "postman-cli": "1.87.0"
   }
 }

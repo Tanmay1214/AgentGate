@@ -14,6 +14,8 @@ npm run dev
 
 Open http://localhost:4310. `npm test` runs the policy and accounting tests.
 
+The redesigned workspace includes an evidence-first case view, responsive navigation and a workflow guide. See [UI_REDESIGN.md](docs/UI_REDESIGN.md) for the repository audit, visual direction and component sources. For browser regression checks, run `npx playwright install chromium` once, then `npm run test:ui`. These tests use a disposable demo database and disabled provider credentials.
+
 ## Refund case workflow
 
 Open **Refund cases** to record a customer request and merchant return review. Gemini investigates the selected payment using read-only tools, retrieves prior refunds and policy, searches verified audit evidence, and prepares a cited recommendation. Review the amount and policy decision, then submit through the existing refund engine. Individual approval and outcome tracking stay in the same case. See [CASE_WORKFLOW.md](docs/CASE_WORKFLOW.md) for data flow, controls, evaluation and limitations.
