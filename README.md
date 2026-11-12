@@ -16,6 +16,7 @@
 </p>
 
 <p align="center">
+  <a href="https://agentgate-2g7f.onrender.com">Open hosted demo</a> ·
   <a href="#run-locally">Run locally</a> ·
   <a href="#the-refund-workflow">See the workflow</a> ·
   <a href="#sponsor-integrations">Sponsor integrations</a> ·
@@ -238,6 +239,8 @@ That boundary is deliberate: the project demonstrates how an AI investigation ca
 
 ## Hosted judge access on Render
 
+**Public demo:** [agentgate-2g7f.onrender.com](https://agentgate-2g7f.onrender.com). Enter the merchant access key supplied in the private judge testing instructions. All payment activity uses PayPal Sandbox test money. The free instance may take a moment to wake up.
+
 The included `render.yaml` configures a PayPal Sandbox service with a generated merchant access key. Judges enter that key to open the workspace. Render supplies the HTTPS service address automatically, and PayPal can deliver signed webhooks directly to the hosted endpoint.
 
 See [Render setup and private judge instructions](docs/RENDER_DEPLOYMENT.md) for environment variables, webhook registration, storage options, and the verification walkthrough. The free service has ephemeral storage; preserving SQLite cases and audit history across restarts requires a persistent disk on a compatible paid plan.
@@ -249,3 +252,7 @@ See [Render setup and private judge instructions](docs/RENDER_DEPLOYMENT.md) for
 - [Sponsor integrations](docs/SPONSOR_INTEGRATIONS.md)
 - [Postman collections](postman/)
 - [Third-party notices](THIRD_PARTY_NOTICES.md)
+
+## License
+
+AgentGate is licensed under the [MIT License](LICENSE). Third-party components and assets retain their own licenses and attribution requirements; see [Third-party notices](THIRD_PARTY_NOTICES.md).
