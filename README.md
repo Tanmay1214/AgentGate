@@ -1,103 +1,235 @@
-# AgentGate
+<img src="docs/agentgate-hero.svg" alt="AgentGate — evidence-backed PayPal refund investigation and merchant controls" width="100%">
 
-A local merchant control desk for evidence-backed PayPal refund cases. The support agent drafts a proposal; deterministic policy code checks it; a provider adapter executes it. Demo mode works without credentials. Sandbox mode uses PayPal test money.
+<p align="center">
+  <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/node-24%2B-3c873a?style=flat-square" alt="Node 24 or later"></a>
+  <img src="https://img.shields.io/badge/payments-PayPal%20Sandbox-003087?style=flat-square" alt="PayPal Sandbox only">
+  <img src="https://img.shields.io/badge/AI-Gemini-4285F4?style=flat-square" alt="Optional Gemini investigation">
+  <img src="https://img.shields.io/badge/review-AG%20Grid-00A98F?style=flat-square" alt="AG Grid review queue">
+  <img src="https://img.shields.io/badge/evidence-Elasticsearch-005571?style=flat-square" alt="Optional Elasticsearch evidence search">
+  <img src="https://img.shields.io/badge/testing-Postman-FF6C37?style=flat-square" alt="Postman API collections">
+  <img src="https://img.shields.io/badge/storage-SQLite-0f80cc?style=flat-square" alt="SQLite audit ledger">
+</p>
 
-## Run
+<p align="center">
+  <strong>AI-assisted refund investigation for merchants.</strong><br>
+  Customer context, merchant evidence, deterministic controls, and a PayPal Sandbox outcome—kept in one local workspace.
+</p>
 
-Requires Node.js 24 or later. Install the pinned dependencies before starting.
+<p align="center">
+  <a href="#run-locally">Run locally</a> ·
+  <a href="#the-refund-workflow">See the workflow</a> ·
+  <a href="#sponsor-integrations">Sponsor integrations</a> ·
+  <a href="#sandbox-verification">Sandbox verification</a> ·
+  <a href="docs/CASE_WORKFLOW.md">Case controls</a>
+</p>
+
+> **AI recommends. Policy decides. The merchant submits.**
+>
+> AgentGate is a local-first PayPal AI Hackathon prototype. It uses PayPal **Sandbox test money only** and is not affiliated with or endorsed by PayPal.
+
+## Why
+
+A refund is not just a payment action. A merchant needs the customer’s request, relevant order and return evidence, a clear policy decision, and a record of exactly what happened.
+
+AgentGate brings those concerns into a single reviewable flow. Gemini can investigate the evidence and prepare a cited recommendation, but it never gets authority to change eligibility, alter merchant limits, approve a request, or call PayPal. Deterministic code and the merchant remain in control.
+
+## Run locally
+
+### Demo mode — no credentials required
 
 ```powershell
+git clone https://github.com/Tanmay1214/AgentGate.git
+cd AgentGate
 npm ci
 Copy-Item .env.example .env
 npm run dev
 ```
 
-Open http://localhost:4310. `npm test` runs the policy and accounting tests.
+Open [http://localhost:4310](http://localhost:4310). The default `.env` uses `PAYPAL_ENV=demo`, so every payment outcome is simulated locally.
 
-The redesigned workspace includes an evidence-first case view, responsive navigation and a workflow guide. See [UI_REDESIGN.md](docs/UI_REDESIGN.md) for the repository audit, visual direction and component sources. For browser regression checks, run `npx playwright install chromium` once, then `npm run test:ui`. These tests use a disposable demo database and disabled provider credentials.
+Try these built-in scenarios:
 
-## Refund case workflow
+| Payment | What it demonstrates |
+| --- | --- |
+| `DEMO-1042` | A $12 refund that completes automatically within policy |
+| `DEMO-1043` | A $45 refund that pauses for individual merchant approval |
+| `DEMO-1045` | A refund blocked because merchant eligibility is unverified |
 
-Open **Refund cases** to record a customer request and merchant return review. Gemini investigates the selected payment using read-only tools, retrieves prior refunds and policy, searches verified audit evidence, and prepares a cited recommendation. Review the amount and policy decision, then submit through the existing refund engine. Individual approval and outcome tracking stay in the same case. See [CASE_WORKFLOW.md](docs/CASE_WORKFLOW.md) for data flow, controls, evaluation and limitations.
+### PayPal Sandbox + live Gemini investigation
 
-The review grid has named approval, uncertain-outcome and blocked-request queues, plus a payment/evidence detail pane. `npm run eval:cases` evaluates 50 labeled synthetic scenarios against the configured live model; it does not call PayPal.
-
-## Order evidence and case recovery
-
-Import order items, return status and written policy from a JSON file or the merchant form. Gemini calculates item-specific recommendations and asks for missing information; the server enforces structured return rules and the returned-item ceiling. Customer replies remain in the case conversation. A blocked request can open one linked follow-up without rewriting the original decision. See [ORDER_RETURN_WORKFLOW.md](docs/ORDER_RETURN_WORKFLOW.md) for the import example, safeguards and live evaluation scope.
-
-`npm run eval:cases -- --suite=evidence` runs the 16-scenario evidence/conversation evaluation. Merchant records are supplied locally, not fetched from an ecommerce connector. No additional API key is needed.
-
-## Sponsor tools
-
-The refund review screen uses AG Grid Community with search, filters, sorting, pagination and individual review actions. Import the collections under `postman/`, or run `npm run test:postman` for the repeatable demo suite against an isolated database. See [SPONSOR_INTEGRATIONS.md](docs/SPONSOR_INTEGRATIONS.md) for setup, safety gates, Sandbox walkthrough and verification.
-
-## Connect PayPal
-
-Edit `.env` locally:
+Switch the local `.env` to your own Sandbox credentials. Keep every value private and out of Git.
 
 ```dotenv
 PAYPAL_ENV=sandbox
 PAYPAL_CLIENT_ID=your_sandbox_client_id
 PAYPAL_CLIENT_SECRET=your_sandbox_client_secret
+
+# Optional: enables Gemini's evidence-backed investigation panel.
+GEMINI_API_KEY=your_gemini_key
+GEMINI_MODEL=gemini-3.5-flash-lite
+
+# Optional: enables Elasticsearch evidence search.
+ELASTICSEARCH_URL=https://your-elasticsearch-endpoint
+ELASTICSEARCH_API_KEY=your_elasticsearch_api_key
 ```
 
-Restart the server. In Connections, create a test checkout and sign in with the sandbox Personal buyer. The app captures the approved order, saves the capture ID, and initially marks it unverified. In Refund requests, the merchant can mark it eligible after reviewing the simulated return. Submit a refund for that capture. All money is USD.
+Restart `npm run dev`, open **Connections**, create a test checkout, and approve it with a PayPal Sandbox Personal buyer. AgentGate captures the approved payment and makes it available for a refund case.
 
-The sandbox app must belong to the test Business merchant. There is no live payment mode. An OAuth token is obtained server-side; secrets are never returned to the browser.
+The application has no live-payment mode. Do not enter production PayPal credentials.
 
-## Optional AI
+## The refund workflow
 
-Set `GEMINI_API_KEY` and optionally `GEMINI_MODEL` (default `gemini-3.5-flash-lite`), then restart. Draft with AI sends the selected capture and customer message to Gemini. Review and submit the result. Without a key the application explicitly uses manual proposals, not simulated AI. The model never receives payment credentials and cannot update merchant eligibility or policy.
+```text
+Customer request
+       │
+       ▼
+Merchant order + return evidence ──► Gemini investigation ──► cited recommendation
+                                                       │
+                                                       ▼
+                                      deterministic policy checks
+                                      • eligibility
+                                      • returned-item value
+                                      • refundable balance
+                                      • merchant limits
+                                                       │
+                                                       ▼
+                                           merchant submit / approval
+                                                       │
+                                                       ▼
+                                         PayPal Sandbox provider outcome
+                                                       │
+                                                       ▼
+                                            append-only local audit trail
+```
 
-## AI reliability
+### A recommendation is not authorization
 
-See [AI_RELIABILITY.md](docs/AI_RELIABILITY.md) for bounded retries, structured validation, remaining-balance checks, cancellation, manual entry, and diagnostics. Gemini 3.5 Flash-Lite passed three live synthetic drafting checks on 10 November 2026. The earlier Gemma checks returned 503 UNAVAILABLE; AgentGate reports those provider failures accurately.
+| Component | Can do | Cannot do |
+| --- | --- | --- |
+| **Gemini investigator** | Read scoped payment, policy, return, refund-history and audit evidence; prepare a cited recommendation or clarification | Change policy, set eligibility, approve a request, execute a refund, access credentials |
+| **Policy engine** | Recheck eligibility, item ceiling, remaining refundable balance, daily budget and merchant thresholds | Invent evidence or treat AI text as authorization |
+| **Merchant** | Verify eligibility, review recommendation, submit or approve a refund | Bypass hard limits or repeat an idempotent operation as a new refund |
+| **PayPal Sandbox** | Capture an approved test order and execute or report a test refund outcome | Provide production payment processing in this project |
 
-## Webhooks
+## What is inside
 
-Local development webhook setup uses `scripts/webhook-proxy.mjs` on port 4311. It accepts only POST `/api/webhook`; every other path returns 404. Start it with `node --env-file=.env scripts/webhook-proxy.mjs`, then point a Cloudflare Quick Tunnel at `http://127.0.0.1:4311`. Register the printed HTTPS URL plus `/api/webhook` using `node --env-file=.env scripts/register-webhook.mjs https://YOUR-TUNNEL.trycloudflare.com/api/webhook`. The helper reuses an exact matching registration, saves its ID into `.env`, and verifies it by fetching it from PayPal. Restart AgentGate afterward. Quick Tunnel URLs are temporary and change when restarted, so a new URL must be registered again. Never point the public tunnel directly at the dashboard port 4310.
+| Workspace | Purpose |
+| --- | --- |
+| **Command center** | Shows the investigation-to-outcome orchestration and current operational state |
+| **Refund cases** | Customer conversation, order/return evidence, Gemini investigation, policy decision, and final outcome in one workspace |
+| **Refund requests** | AG Grid review queue for approvals, uncertain provider outcomes, blocked requests, filters, and request detail |
+| **Agent permissions** | Merchant-controlled automatic threshold, daily allowance, per-refund maximum, and individual approval path |
+| **Evidence search** | Optional Elasticsearch search over sanitized operational evidence with local-ledger citation validation |
+| **Audit trail** | SHA-256 chained events, integrity check, provider outcome records, and verified webhook events |
+| **Connections** | PayPal Sandbox checkout, Gemini status, Elasticsearch status, and local integration guidance |
 
-Expose only `/api/webhook` through a public HTTPS endpoint on port 443 and register it on the same sandbox REST app. Save its `PAYPAL_WEBHOOK_ID` in `.env`. Subscribe to relevant capture/refund events. `PUBLIC_URL` sets checkout return URLs if needed. Keep the merchant dashboard on localhost; never configure a tunnel to rewrite public requests into a trusted localhost Host header. This local prototype has no internet-facing merchant authentication.
+## Product gallery
 
-Webhooks are verified via PayPal before recording them. Matching known pending refund IDs are re-fetched from PayPal. Use real sandbox events to test verification; simulator events do not support PayPal's postback signature verification endpoint. Pending requests can also be reconciled with Check outcome.
+Real screens from the local AgentGate workspace using PayPal Sandbox test data. No screenshots are mocked, and no buyer credentials or API keys are shown.
 
-## Controls
+<img src="docs/screenshots/overview.png" alt="AgentGate Command Center showing the refund orchestration layer and policy status" width="100%">
 
-- Transactional SQLite reservations serialize budget checks and writes before provider execution.
-- Default auto threshold $20, daily allowance $100, per-refund maximum $100.
-- Human approvals re-evaluate current eligibility, permissions, and available funds.
-- Each logical request has a unique application key; altered reuse is rejected. PayPal requests use a stable operation UUID as `PayPal-Request-Id`.
-- Uncertain outcomes and pending refunds keep reservations, including across UTC day boundaries. Process restarts turn executing records into unknown.
-- A timeout without a refund ID requires inspection in PayPal Sandbox; the app will not automatically release funds or issue a fresh refund.
-- SHA-256 chained audit events and SQL triggers detect local modification. This is not proof against a database administrator rewriting the complete database; checkpoints are not externally anchored.
-- Demo and sandbox use separate SQLite databases under ignored `data/`.
+<p align="center"><sub><strong>Command Center</strong> — the customer request, evidence, AI investigation, policy, approval, and provider-outcome path at a glance.</sub></p>
 
-## Demo
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/cases.png" alt="AgentGate Refund Cases workspace showing Gemini investigation and policy review"><br><sub><strong>Refund Cases</strong> — conversation, merchant evidence, cited Gemini recommendation, and deterministic policy outcome in one review surface.</sub></td>
+    <td width="50%"><img src="docs/screenshots/requests.png" alt="AgentGate Refund Requests screen using AG Grid"><br><sub><strong>Refund Requests</strong> — AG Grid review queues, filters, request details, and individual merchant actions.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/search.png" alt="AgentGate Elasticsearch Evidence Search screen"><br><sub><strong>Evidence Search</strong> — optional Elasticsearch retrieval over sanitized operational records.</sub></td>
+    <td width="50%"><img src="docs/screenshots/audit.png" alt="AgentGate Audit Trail showing verified integrity"><br><sub><strong>Audit Trail</strong> — hash-chained events, verified provider notifications, and a readable decision sequence.</sub></td>
+  </tr>
+</table>
 
-1. Propose $12 on DEMO-1042: completes through the simulated provider.
-2. Propose $45 on DEMO-1043: requires merchant approval.
-3. Propose a refund on DEMO-1045: denied because eligibility is unverified.
-4. Repeat the same request key and identical details: returns the original operation.
-5. Inspect Audit trail and its chain verification.
+## Sponsor integrations
 
-## Scope and limits
+These are implemented product integrations, not decorative logos or claims of eligibility for a particular prize track.
 
-This is a single-merchant local prototype. Eligibility is explicitly set by the merchant; it is not inferred from customer text or a real returns integration. Budget accounting covers operations initiated here. PayPal still enforces its own refundable amount; external refunds are not yet fully imported into local capture balances. There is no customer identity verification, multi-user login, autonomous inbox processing, distributed worker queue, or PostgreSQL deployment yet. The AI investigator prepares evidence-backed recommendations; submitting a payment action is explicit and merchant approval is required above the configured threshold.
+| Sponsor tool | Where it appears in AgentGate | What it adds |
+| --- | --- | --- |
+| **AG Grid Community** | **Refund requests** review workspace | Search, status queues, column filters, numeric sorting, pagination, and per-request Details / Approve / Reject / Check outcome actions. Amounts are not bulk-approved or editable from the grid. |
+| **Postman** | `postman/` collections and repeatable demo validation | Separate Demo and Sandbox collections plus a local environment. `npm run test:postman` starts an isolated demo server and runs 19 requests with 33 assertions—without PayPal or Gemini credentials. |
+| **Elasticsearch** | **Evidence search** and Gemini’s read-only evidence retrieval | An optional searchable projection of sanitized operational metadata. Gemini citations are checked against the local audit sequence and hash before they can appear in an investigation. SQLite remains the source of truth. |
 
-No credentials are bundled. The PayPal sandbox checkout, capture, automatic refund, approved refund and genuine signed webhooks were verified on 9 November 2026 (Asia/Kolkata). See docs/SANDBOX_VERIFICATION.md and docs/sandbox-verification.json for evidence and exact scope. Gemma drafting failed during that run; refund proposals were submitted manually. Test data is persistent; use distinct request keys for genuinely new requests.
+AG Grid is bundled locally with no Enterprise key or external data service. Elasticsearch is strictly optional: no operational metadata is sent until a merchant explicitly searches or syncs evidence. Read the exact setup, scope, and verification notes in [Sponsor integrations](docs/SPONSOR_INTEGRATIONS.md).
 
-Elastic evidence search is available from the sidebar. Configure the two ELASTICSEARCH fields in .env and restart. See [sponsor integration setup](docs/SPONSOR_INTEGRATIONS.md#elasticsearch-evidence-search) for indexed fields, permissions, and limits.
+## Evidence and policy controls
 
-## Render deployment (Sandbox demo)
+AgentGate fails closed when it cannot establish a safe action.
 
-AgentGate can run as a public hackathon demo on Render. Hosted mode listens on Render's supplied port, accepts only the configured public host, and requires a shared merchant access key before workspace APIs expose any data. On Render, its injected `RENDER_EXTERNAL_URL` is used automatically; `PUBLIC_URL` remains available if a custom domain is added later. PayPal webhooks remain reachable at `/api/webhook`; every notification is verified with PayPal before it is recorded.
+- Merchant eligibility is explicit; customer text never makes a payment eligible.
+- Imported return records enforce returned-item value and quantity ceilings.
+- Every provider action is reserved atomically before execution.
+- A stable idempotency key prevents a retry from producing another refund.
+- Approval rechecks current evidence, remaining balance, permissions, and budget.
+- A timeout without a provider refund ID becomes an uncertain outcome; AgentGate does not retry it automatically.
+- Gemini receives restricted operational facts, never PayPal credentials.
+- Audit events are append-only and hash-chained. This detects local row modification, but is not an external immutable ledger.
 
-1. Push this repository, then in Render choose **New → Blueprint** and select it. The included `render.yaml` supplies the Node build and start commands.
-2. In the service Environment settings, set the secret values there — never in Git: a random `AGENTGATE_ACCESS_KEY` of at least 24 characters, `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID`, and, if enabled, the Gemini and Elasticsearch variables. The Blueprint sets `HOSTED_MODE=true`; Render supplies `PORT` and the public URL automatically, so do not set either yourself.
-3. Once deployed, register `https://YOUR-SERVICE.onrender.com/api/webhook` in PayPal's **Sandbox** Developer Dashboard using the same REST app. Copy that registration ID into `PAYPAL_WEBHOOK_ID`, then redeploy.
-4. Enter the shared merchant access key at the AgentGate entry screen. It remains only in that browser tab's session storage and is never bundled into the frontend.
+Read the detailed implementation notes in [Case workflow](docs/CASE_WORKFLOW.md), [Order and return evidence](docs/ORDER_RETURN_WORKFLOW.md), and [AI reliability](docs/AI_RELIABILITY.md).
 
-### Persistence and scope
+## Sandbox verification
 
-Render's free web-service filesystem is ephemeral. It is fine for a short live demo, but restart or redeploy can erase SQLite cases, audit entries, idempotency records, and webhook de-duplication history. For a persistent demo use a Render persistent disk on a paid plan and set `DATA_DIR` to its mount path, or migrate the store to hosted Postgres. This remains **PayPal Sandbox only**; do not use this prototype to process live payments.
+The core provider path has been exercised using real PayPal Sandbox test money:
+
+- approved checkout capture
+- automatic and above-threshold merchant-approved refund paths
+- duplicate-operation protection and over-refund blocking
+- checkout-return recovery and persistent local records across restart
+- genuine signed PayPal capture and refund webhooks
+
+The exact dated verification report, scope, and limitations are in [Sandbox verification](docs/SANDBOX_VERIFICATION.md). Provider-pending, timeout, and rejection behavior is covered with automated fixtures rather than deliberately induced on PayPal.
+
+## Platform integrations
+
+| Integration | Used for | Setup |
+| --- | --- | --- |
+| **Google Gemini** | Read-only, evidence-backed refund investigation | Add `GEMINI_API_KEY`; see [AI reliability](docs/AI_RELIABILITY.md) |
+| **PayPal Sandbox** | Test checkout, capture, refund execution, and signature-verified webhooks | Add Sandbox REST credentials; see [Sandbox verification](docs/SANDBOX_VERIFICATION.md) |
+| **Elasticsearch** | Sanitized operational evidence retrieval | Add the two Elasticsearch variables; see [sponsor integration setup](docs/SPONSOR_INTEGRATIONS.md#elasticsearch-evidence-search) |
+| **AG Grid Community** | Review-table filtering, sorting, pagination, and actions | Bundled locally—no key required |
+| **Postman** | Repeatable local and Sandbox API collections | Import `postman/` or run `npm run test:postman` |
+
+## Test it
+
+```powershell
+# Policy, accounting, AI guardrail, checkout and evidence tests
+npm test
+
+# Browser regression and accessibility checks (install Chromium once first)
+npx playwright install chromium
+npm run test:ui
+
+# Optional: evaluate the configured Gemini model against synthetic cases.
+# This does not call PayPal.
+npm run eval:cases
+```
+
+The browser suite uses a disposable demo database and disabled provider credentials. The live AI evaluation is intentionally separate: it records provider failures and invalid outputs rather than turning them into refunds.
+
+## Local webhook development
+
+The merchant workspace stays on `localhost`. For a fresh, signed Sandbox webhook during local development, expose only the narrow webhook proxy—not the dashboard:
+
+```powershell
+node --env-file=.env scripts/webhook-proxy.mjs
+# Point a temporary HTTPS tunnel at http://127.0.0.1:4311
+node --env-file=.env scripts/register-webhook.mjs https://YOUR-TUNNEL.trycloudflare.com/api/webhook
+```
+
+The helper saves the Sandbox webhook ID to `.env` and verifies it by fetching it from PayPal. Temporary tunnel addresses change whenever restarted. See [sponsor integration setup](docs/SPONSOR_INTEGRATIONS.md) for the full walkthrough.
+
+## Scope and limitations
+
+AgentGate is a single-merchant, local-first hackathon prototype. It does not provide multi-user authentication, customer identity verification, ecommerce-return ingestion, a distributed worker queue, external audit anchoring, or production PayPal payments. External refunds made outside AgentGate are not yet fully imported into local capture balances.
+
+That boundary is deliberate: the project demonstrates how an AI investigation can stay useful without being allowed to move money on its own.
+
+## Project notes
+
+- [UI redesign notes](docs/UI_REDESIGN.md)
+- [Second UI iteration notes](docs/UI_ITERATION_2.md)
+- [Sponsor integrations](docs/SPONSOR_INTEGRATIONS.md)
+- [Postman collections](postman/)
+- [Third-party notices](THIRD_PARTY_NOTICES.md)
