@@ -241,6 +241,7 @@ That boundary is deliberate: the project demonstrates how an AI investigation ca
 
 **Public demo:** [agentgate-2g7f.onrender.com](https://agentgate-2g7f.onrender.com). Enter the merchant access key supplied in the private judge testing instructions. All payment activity uses PayPal Sandbox test money. The free instance may take a moment to wake up.
 
+
 The included `render.yaml` configures a PayPal Sandbox service with a generated merchant access key. Judges enter that key to open the workspace. Render supplies the HTTPS service address automatically, and PayPal can deliver signed webhooks directly to the hosted endpoint.
 
 See [Render setup and private judge instructions](docs/RENDER_DEPLOYMENT.md) for environment variables, webhook registration, storage options, and the verification walkthrough. The free service has ephemeral storage; preserving SQLite cases and audit history across restarts requires a persistent disk on a compatible paid plan.
