@@ -142,6 +142,16 @@ Real screens from the local AgentGate workspace using PayPal Sandbox test data. 
   </tr>
 </table>
 
+## Watch the live demo
+
+<p align="center">
+  <a href="https://youtu.be/FIbAFTaE1Gg" title="Watch the AgentGate PayPal Sandbox demo on YouTube">
+    <img src="https://img.youtube.com/vi/FIbAFTaE1Gg/maxresdefault.jpg" alt="Watch the AgentGate live PayPal Sandbox demo" width="760">
+  </a>
+</p>
+
+<p align="center"><strong><a href="https://youtu.be/FIbAFTaE1Gg">Watch the 3-minute AgentGate live demo on YouTube →</a></strong><br><sub>A real PayPal Sandbox purchase, refund case, Gemini investigation, policy check, provider outcome, and audit trail.</sub></p>
+
 ## Sponsor integrations
 
 These are implemented product integrations, not decorative logos or claims of eligibility for a particular prize track.
