@@ -1,4 +1,4 @@
-<img src="docs/agentgate-hero.svg" alt="AgentGate — evidence-backed PayPal refund investigation and merchant controls" width="100%">
+<img src="docs/agentgate-hero.svg" alt="AgentGate — evidence-backed PayPal refund investigation and merchant controls" width="100%">.  
 
 <p align="center">
   <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/node-24%2B-3c873a?style=flat-square" alt="Node 24 or later"></a>
