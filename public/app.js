@@ -11,6 +11,7 @@ import { esc, money, when, icon, empty } from "./ui.js";
 const drafting = createDraftState(),
   $ = (s) => document.querySelector(s);
 let token = "",
+accessKey = sessionStorage.getItem("agentgate-access-key") || "",
   data,
   view = viewNames[location.hash.slice(1)]
     ? location.hash.slice(1)
@@ -29,7 +30,11 @@ function notice(text, error = false) {
 async function api(path, body, signal) {
   const r = await fetch("/api/" + path, {
     method: body ? "POST" : "GET",
-    headers: { "Content-Type": "application/json", "X-AgentGate-Key": token },
+headers: {
+"Content-Type": "application/json",
+"X-AgentGate-Key": token,
+...(accessKey ? { "X-AgentGate-Access-Key": accessKey } : {}),
+},
     body: body ? JSON.stringify(body) : undefined,
     signal,
   });
@@ -462,8 +467,45 @@ document.addEventListener("submit", async (e) => {
     if (button) button.disabled = false;
   }
 });
+async function establishSession() {
+const response = await fetch("/api/session", {
+headers: accessKey ? { "X-AgentGate-Access-Key": accessKey } : {},
+});
+const result = await response.json();
+if (!response.ok) throw Error(result.error || "Unable to open this workspace");
+token = result.token;
+}
+function accessScreen(message = "Enter the shared merchant access key to continue.") {
+const panel = document.createElement("section");
+panel.className = "access-screen";
+panel.innerHTML = `<div class="access-card"><div class="access-mark" aria-hidden="true">AG</div><p class="eyebrow">PRIVATE MERCHANT WORKSPACE</p><h1>Open AgentGate</h1><p class="access-message">${message}</p><form id="access-form"><label>Merchant access key<input name="accessKey" type="password" autocomplete="current-password" required autofocus /></label><button class="primary" type="submit">Open workspace</button></form><small>This key is stored only in this browser session.</small></div>`;
+document.body.classList.add("access-locked");
+document.body.append(panel);
+panel.querySelector("form").addEventListener("submit", async (event) => {
+event.preventDefault();
+const button = panel.querySelector("button");
+button.disabled = true;
+accessKey = new FormData(event.currentTarget).get("accessKey").trim();
 try {
-  token = (await (await fetch("/api/session")).json()).token;
+await establishSession();
+sessionStorage.setItem("agentgate-access-key", accessKey);
+panel.remove();
+document.body.classList.remove("access-locked");
+await bootWorkspace();
+} catch (error) {
+accessKey = "";
+sessionStorage.removeItem("agentgate-access-key");
+panel.querySelector("input").value = "";
+panel.querySelector("input").focus();
+panel.querySelector(".access-message").textContent = error.message;
+} finally {
+button.disabled = false;
+}
+});
+}
+async function bootWorkspace() {
+try {
+await establishSession();
   if (location.pathname === "/checkout-return") {
     const id = new URLSearchParams(location.search).get("token");
     await api("capture", { id });
@@ -475,7 +517,8 @@ try {
   }
   await refresh();
 } catch (error) {
-  notice(error.message, true);
+if (/access key|merchant access/i.test(error.message)) return accessScreen(error.message);
+notice(error.message, true);
   $("#view").innerHTML =
     empty("Your workspace could not load", error.message, "info") +
     '<button class="primary" id="retry-workspace">Try again ' +
@@ -483,3 +526,5 @@ try {
     "</button>";
   $("#view").removeAttribute("aria-busy");
 }
+}
+bootWorkspace();

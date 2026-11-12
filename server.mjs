@@ -13,7 +13,15 @@ const mode=process.env.PAYPAL_ENV||'demo';if(!['demo','sandbox'].includes(mode))
 const dataDir=process.env.DATA_DIR||'data';await mkdir(dataDir,{recursive:true});const s=store(join(dataDir,mode+'.sqlite'));const session=randomBytes(32).toString('hex');
 const elastic=createElastic({mode,dataDir});
 const aiInFlight=new Set();
-const port=Number(process.env.PORT||4310);const origin=process.env.PUBLIC_URL||`http://localhost:${port}`;
+const port=Number(process.env.PORT||4310);
+const origin=process.env.PUBLIC_URL||`http://localhost:${port}`;
+let publicOrigin;
+try{publicOrigin=new URL(origin);}catch{throw Error('PUBLIC_URL must be an absolute URL, for example https://agentgate.onrender.com');}
+const hosted=process.env.HOSTED_MODE==='true';
+if(hosted&&publicOrigin.protocol!=='https:')throw Error('Hosted PUBLIC_URL must use HTTPS');
+const accessKey=process.env.AGENTGATE_ACCESS_KEY;
+if(hosted&&(!accessKey||accessKey.length<24))throw Error('Hosted deployments require AGENTGATE_ACCESS_KEY with at least 24 characters');
+const allowedHosts=new Set(hosted?[publicOrigin.host]:[`localhost:${port}`,`127.0.0.1:${port}`]);
 if(mode==='demo')for(const [id,amount,label] of [['DEMO-1042',1200,'Canvas notebook · damaged item'],['DEMO-1043',4500,'Desk organiser · returned'],['DEMO-1044',9000,'Studio headphones · returned'],['DEMO-1045',6000,'Laptop stand · return unverified']])s.run('INSERT OR IGNORE INTO captures VALUES (?,?,?,?,?)',id,amount,'USD',id==='DEMO-1045'?0:1,label);
 // A crashed process may have called the provider. Preserve its reservation.
 for(const r of s.all("SELECT id FROM requests WHERE status='executing'"))s.settle(r.id,'unknown');
@@ -21,7 +29,7 @@ async function execute(r){return executeRefund(s,r,mode==='demo'?async()=>{await
 const cases=createCases(s,{elastic,execute,apiKey:process.env.GEMINI_API_KEY,model:process.env.GEMINI_MODEL||'gemini-3.5-flash-lite'});
 async function readBody(req){let text='';for await(const c of req){text+=c;if(text.length>32000)throw Error('Request too large');}return text?JSON.parse(text):{};}
 function state(){const day=new Date().toISOString().slice(0,10);return {mode,cases:cases.list(),elastic:elastic.info(),ai:!!process.env.GEMINI_API_KEY,aiModel:process.env.GEMINI_MODEL||'gemini-3.5-flash-lite',configured:!!(process.env.PAYPAL_CLIENT_ID&&process.env.PAYPAL_CLIENT_SECRET),webhook:!!process.env.PAYPAL_WEBHOOK_ID,policy:s.policy(),reserved:s.reserved(day),captures:s.all('SELECT * FROM captures').map(c=>({...c,remaining:s.remaining(c.id)})),requests:s.all('SELECT * FROM requests ORDER BY created DESC'),events:s.all('SELECT * FROM events ORDER BY seq DESC LIMIT 100').map(e=>({...e,data:JSON.parse(e.body)})),integrity:s.verify()};}
-const server=http.createServer(async(req,res)=>{const url=new URL(req.url,'http://localhost');const send=(code,value)=>{res.writeHead(code,{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(JSON.stringify(value));};
+const server=http.createServer(async(req,res)=>{const url=new URL(req.url,origin);const send=(code,value)=>{res.writeHead(code,{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(JSON.stringify(value));};
 try{
  if(url.pathname==='/api/webhook'&&req.method==='POST'){
   if(mode!=='sandbox'||!process.env.PAYPAL_WEBHOOK_ID)return send(503,{error:'Webhook not configured'});
@@ -33,13 +41,17 @@ try{
   const r=s.get("SELECT * FROM requests WHERE provider_id=? AND status IN ('pending','unknown')",body.resource?.id||'');
   if(r){const p=await paypal(`/v2/payments/refunds/${encodeURIComponent(r.provider_id)}`);s.settle(r.id,providerState(p.status),p.id);}return send(200,{received:true});
  }
- if(url.pathname==='/checkout-return'&&req.headers.host===new URL(origin).host&&req.headers.host!==`localhost:${port}`){res.writeHead(302,{Location:`http://localhost:${port}/checkout-return?token=${encodeURIComponent(url.searchParams.get('token')||'')}`});return res.end();}
- if(req.headers.host!==`localhost:${port}`&&req.headers.host!==`127.0.0.1:${port}`)return send(403,{error:'Merchant dashboard is local-only'});
- if(req.headers.origin&&![origin,`http://localhost:${port}`,`http://127.0.0.1:${port}`].includes(req.headers.origin))return send(403,{error:'Invalid origin'});
+ if(!hosted&&url.pathname==='/checkout-return'&&req.headers.host===publicOrigin.host&&!allowedHosts.has(req.headers.host||'')){res.writeHead(302,{Location:`http://localhost:${port}/checkout-return?token=${encodeURIComponent(url.searchParams.get('token')||'')}`});return res.end();}
+ if(!allowedHosts.has(req.headers.host||''))return send(403,{error:'Unrecognized host'});
+ if(req.headers.origin&&req.headers.origin!==origin&&!( !hosted&&[`http://localhost:${port}`,`http://127.0.0.1:${port}`].includes(req.headers.origin)))return send(403,{error:'Invalid origin'});
  if(req.headers['sec-fetch-site']==='cross-site'&&url.pathname.startsWith('/api/'))return send(403,{error:'Cross-site access denied'});
- if(url.pathname==='/api/session'&&req.method==='GET')return send(200,{token:session});
+ if(url.pathname==='/api/session'&&req.method==='GET'){
+  if(hosted&&req.headers['x-agentgate-access-key']!==accessKey)return send(401,{error:'Enter the merchant access key to open this workspace'});
+  return send(200,{token:session,hosted});
+ }
  if(url.pathname.startsWith('/api/')){
-  if(req.headers['x-agentgate-key']!==session)return send(401,{error:'Reload the local dashboard to establish a session'});
+  if(hosted&&req.headers['x-agentgate-access-key']!==accessKey)return send(401,{error:'Merchant access required'});
+  if(req.headers['x-agentgate-key']!==session)return send(401,{error:'Reload the workspace to establish a session'});
   if(req.method==='GET'&&url.pathname==='/api/state')return send(200,state());
   const b=await readBody(req);
   if(req.method!=='POST')return send(405,{error:'Method not allowed'});
@@ -83,4 +95,4 @@ try{
  }
  const files={'/command-center.js':'command-center.js','/command.css':'command.css','/':'index.html','/checkout-return':'index.html','/app.js':'app.js','/draft-state.js':'draft-state.js','/style.css':'style.css','/case-workspace.js':'case-workspace.js','/case-presentation.js':'case-presentation.js','/workspace-views.js':'workspace-views.js','/ui.js':'ui.js','/favicon.svg':'favicon.svg','/fonts/geist-latin-wght-normal.woff2':'fonts/geist-latin-wght-normal.woff2','/fonts/OFL.txt':'fonts/OFL.txt','/review-panel.js':'review-panel.js','/merchant-labels.js':'merchant-labels.js','/evidence-form.js':'evidence-form.js','/refund-grid.js':'refund-grid.js','/vendor/ag-grid-community.js':'vendor/ag-grid-community.js','/vendor/ag-grid.css':'vendor/ag-grid.css','/vendor/ag-theme-quartz.css':'vendor/ag-theme-quartz.css'};const file=files[url.pathname];if(!file)return send(404,{error:'Not found'});const content=await readFile(new URL('./public/'+file,import.meta.url));const contentType=file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':file.endsWith('.woff2')?'font/woff2':file.endsWith('.svg')?'image/svg+xml':file.endsWith('.txt')?'text/plain':'text/html';res.writeHead(200,{'Content-Type':contentType,'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; font-src 'self' data:; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'"});res.end(content);
 }catch(e){if(!res.destroyed){if(e.retryAfterSeconds)res.setHeader('Retry-After',String(e.retryAfterSeconds));send(e.httpStatus||400,{error:e.message,...(e.code?{code:e.code}: {})});}}});
-server.listen(port,'127.0.0.1',()=>console.log(`AgentGate (${mode}): http://localhost:${port}`));
+server.listen(port,hosted?'0.0.0.0':'127.0.0.1',()=>console.log(`AgentGate (${mode}): ${origin}`));

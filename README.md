@@ -88,3 +88,16 @@ This is a single-merchant local prototype. Eligibility is explicitly set by the 
 No credentials are bundled. The PayPal sandbox checkout, capture, automatic refund, approved refund and genuine signed webhooks were verified on 9 November 2026 (Asia/Kolkata). See docs/SANDBOX_VERIFICATION.md and docs/sandbox-verification.json for evidence and exact scope. Gemma drafting failed during that run; refund proposals were submitted manually. Test data is persistent; use distinct request keys for genuinely new requests.
 
 Elastic evidence search is available from the sidebar. Configure the two ELASTICSEARCH fields in .env and restart. See [sponsor integration setup](docs/SPONSOR_INTEGRATIONS.md#elasticsearch-evidence-search) for indexed fields, permissions, and limits.
+
+## Render deployment (Sandbox demo)
+
+AgentGate can run as a public hackathon demo on Render. Hosted mode listens on Render's supplied port, accepts only the configured `PUBLIC_URL` host, and requires a shared merchant access key before workspace APIs expose any data. PayPal webhooks remain reachable at `/api/webhook`; every notification is verified with PayPal before it is recorded.
+
+1. Push this repository, then in Render choose **New → Blueprint** and select it. The included `render.yaml` supplies the Node build and start commands.
+2. In the service Environment settings, set the secret values there — never in Git: `PUBLIC_URL` (the exact `https://…onrender.com` address), a random `AGENTGATE_ACCESS_KEY` of at least 24 characters, `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID`, and, if enabled, the Gemini and Elasticsearch variables. The Blueprint sets `HOSTED_MODE=true`; Render supplies `PORT`, so do not set it yourself.
+3. Once deployed, register `https://YOUR-SERVICE.onrender.com/api/webhook` in PayPal's **Sandbox** Developer Dashboard using the same REST app. Copy that registration ID into `PAYPAL_WEBHOOK_ID`, then redeploy.
+4. Enter the shared merchant access key at the AgentGate entry screen. It remains only in that browser tab's session storage and is never bundled into the frontend.
+
+### Persistence and scope
+
+Render's free web-service filesystem is ephemeral. It is fine for a short live demo, but restart or redeploy can erase SQLite cases, audit entries, idempotency records, and webhook de-duplication history. For a persistent demo use a Render persistent disk on a paid plan and set `DATA_DIR` to its mount path, or migrate the store to hosted Postgres. This remains **PayPal Sandbox only**; do not use this prototype to process live payments.
