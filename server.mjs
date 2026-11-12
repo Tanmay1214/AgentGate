@@ -14,10 +14,13 @@ const dataDir=process.env.DATA_DIR||'data';await mkdir(dataDir,{recursive:true})
 const elastic=createElastic({mode,dataDir});
 const aiInFlight=new Set();
 const port=Number(process.env.PORT||4310);
-const origin=process.env.PUBLIC_URL||process.env.RENDER_EXTERNAL_URL||`http://localhost:${port}`;
+let origin=process.env.PUBLIC_URL||process.env.RENDER_EXTERNAL_URL||`http://localhost:${port}`;
 let publicOrigin;
 try{publicOrigin=new URL(origin);}catch{throw Error('PUBLIC_URL must be an absolute URL, for example https://agentgate.onrender.com');}
+if(publicOrigin.username||publicOrigin.password||publicOrigin.search||publicOrigin.hash||publicOrigin.pathname!=='/')throw Error('PUBLIC_URL must contain only an origin, without a path, credentials or query');
+origin=publicOrigin.origin;
 const hosted=process.env.HOSTED_MODE==='true';
+if(process.env.RENDER==='true'&&!hosted)throw Error('Render requires HOSTED_MODE=true');
 if(hosted&&publicOrigin.protocol!=='https:')throw Error('Hosted PUBLIC_URL must use HTTPS');
 const accessKey=process.env.AGENTGATE_ACCESS_KEY;
 if(hosted&&(!accessKey||accessKey.length<24))throw Error('Hosted deployments require AGENTGATE_ACCESS_KEY with at least 24 characters');
@@ -31,6 +34,7 @@ async function readBody(req){let text='';for await(const c of req){text+=c;if(te
 function state(){const day=new Date().toISOString().slice(0,10);return {mode,cases:cases.list(),elastic:elastic.info(),ai:!!process.env.GEMINI_API_KEY,aiModel:process.env.GEMINI_MODEL||'gemini-3.5-flash-lite',configured:!!(process.env.PAYPAL_CLIENT_ID&&process.env.PAYPAL_CLIENT_SECRET),webhook:!!process.env.PAYPAL_WEBHOOK_ID,policy:s.policy(),reserved:s.reserved(day),captures:s.all('SELECT * FROM captures').map(c=>({...c,remaining:s.remaining(c.id)})),requests:s.all('SELECT * FROM requests ORDER BY created DESC'),events:s.all('SELECT * FROM events ORDER BY seq DESC LIMIT 100').map(e=>({...e,data:JSON.parse(e.body)})),integrity:s.verify()};}
 const server=http.createServer(async(req,res)=>{const url=new URL(req.url,origin);const send=(code,value)=>{res.writeHead(code,{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(JSON.stringify(value));};
 try{
+ if(url.pathname==='/healthz'&&req.method==='GET')return send(200,{ok:true});
  if(url.pathname==='/api/webhook'&&req.method==='POST'){
   if(mode!=='sandbox'||!process.env.PAYPAL_WEBHOOK_ID)return send(503,{error:'Webhook not configured'});
   const body=await readBody(req);const verified=await paypal('/v1/notifications/verify-webhook-signature',{method:'POST',body:{auth_algo:req.headers['paypal-auth-algo'],cert_url:req.headers['paypal-cert-url'],transmission_id:req.headers['paypal-transmission-id'],transmission_sig:req.headers['paypal-transmission-sig'],transmission_time:req.headers['paypal-transmission-time'],webhook_id:process.env.PAYPAL_WEBHOOK_ID,webhook_event:body}});

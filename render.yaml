@@ -5,16 +5,16 @@ services:
     plan: free
     buildCommand: npm ci
     startCommand: npm start
-    healthCheckPath: /
+    healthCheckPath: /healthz
     envVars:
       - key: NODE_VERSION
-        value: 24.17.0
+        value: "24"
       - key: PAYPAL_ENV
         value: sandbox
       - key: HOSTED_MODE
         value: "true"
       - key: AGENTGATE_ACCESS_KEY
-        sync: false
+        generateValue: true
       - key: PAYPAL_CLIENT_ID
         sync: false
       - key: PAYPAL_CLIENT_SECRET

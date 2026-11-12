@@ -236,6 +236,12 @@ AgentGate is a single-merchant, local-first hackathon prototype. It does not pro
 
 That boundary is deliberate: the project demonstrates how an AI investigation can stay useful without being allowed to move money on its own.
 
+## Hosted judge access on Render
+
+The included `render.yaml` configures a PayPal Sandbox service with a generated merchant access key. Judges enter that key to open the workspace. Render supplies the HTTPS service address automatically, and PayPal can deliver signed webhooks directly to the hosted endpoint.
+
+See [Render setup and private judge instructions](docs/RENDER_DEPLOYMENT.md) for environment variables, webhook registration, storage options, and the verification walkthrough. The free service has ephemeral storage; preserving SQLite cases and audit history across restarts requires a persistent disk on a compatible paid plan.
+
 ## Project notes
 
 - [UI redesign notes](docs/UI_REDESIGN.md)
