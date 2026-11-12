@@ -1,5 +1,5 @@
 <img src="docs/agentgate-hero.svg" alt="AgentGate — evidence-backed PayPal refund investigation and merchant controls" width="100%">.  
-
+  
 <p align="center">
   <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/node-24%2B-3c873a?style=flat-square" alt="Node 24 or later"></a>
   <img src="https://img.shields.io/badge/payments-PayPal%20Sandbox-003087?style=flat-square" alt="PayPal Sandbox only">
@@ -256,3 +256,7 @@ See [Render setup and private judge instructions](docs/RENDER_DEPLOYMENT.md) for
 ## License
 
 AgentGate is licensed under the [MIT License](LICENSE). Third-party components and assets retain their own licenses and attribution requirements; see [Third-party notices](THIRD_PARTY_NOTICES.md).
+
+
+
+
