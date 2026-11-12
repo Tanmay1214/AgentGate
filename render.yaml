@@ -13,8 +13,6 @@ services:
         value: sandbox
       - key: HOSTED_MODE
         value: "true"
-      - key: PUBLIC_URL
-        sync: false
       - key: AGENTGATE_ACCESS_KEY
         sync: false
       - key: PAYPAL_CLIENT_ID

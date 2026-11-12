@@ -14,7 +14,7 @@ const dataDir=process.env.DATA_DIR||'data';await mkdir(dataDir,{recursive:true})
 const elastic=createElastic({mode,dataDir});
 const aiInFlight=new Set();
 const port=Number(process.env.PORT||4310);
-const origin=process.env.PUBLIC_URL||`http://localhost:${port}`;
+const origin=process.env.PUBLIC_URL||process.env.RENDER_EXTERNAL_URL||`http://localhost:${port}`;
 let publicOrigin;
 try{publicOrigin=new URL(origin);}catch{throw Error('PUBLIC_URL must be an absolute URL, for example https://agentgate.onrender.com');}
 const hosted=process.env.HOSTED_MODE==='true';

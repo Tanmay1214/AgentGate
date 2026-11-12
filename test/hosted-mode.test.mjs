@@ -14,7 +14,7 @@ const request=(port,path,headers={})=>new Promise((resolve,reject)=>{
 });
 test('hosted mode protects merchant APIs while allowing only its configured host',async()=>{
  const port=39000+Math.floor(Math.random()*1000),dataDir=await mkdtemp(join(os.tmpdir(),'agentgate-hosted-'));
- const child=spawn(process.execPath,['server.mjs'],{cwd:process.cwd(),env:{...process.env,PAYPAL_ENV:'demo',HOSTED_MODE:'true',PORT:String(port),PUBLIC_URL:'https://agentgate.example.test',AGENTGATE_ACCESS_KEY:'a-hosted-access-key-that-is-long-enough',DATA_DIR:dataDir},stdio:'ignore'});
+ const child=spawn(process.execPath,['server.mjs'],{cwd:process.cwd(),env:{...process.env,PAYPAL_ENV:'demo',HOSTED_MODE:'true',PORT:String(port),RENDER_EXTERNAL_URL:'https://agentgate.example.test',AGENTGATE_ACCESS_KEY:'a-hosted-access-key-that-is-long-enough',DATA_DIR:dataDir},stdio:'ignore'});
  try{
   let ready;
   for(let attempt=0;attempt<40;attempt++){

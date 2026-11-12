@@ -91,10 +91,10 @@ Elastic evidence search is available from the sidebar. Configure the two ELASTIC
 
 ## Render deployment (Sandbox demo)
 
-AgentGate can run as a public hackathon demo on Render. Hosted mode listens on Render's supplied port, accepts only the configured `PUBLIC_URL` host, and requires a shared merchant access key before workspace APIs expose any data. PayPal webhooks remain reachable at `/api/webhook`; every notification is verified with PayPal before it is recorded.
+AgentGate can run as a public hackathon demo on Render. Hosted mode listens on Render's supplied port, accepts only the configured public host, and requires a shared merchant access key before workspace APIs expose any data. On Render, its injected `RENDER_EXTERNAL_URL` is used automatically; `PUBLIC_URL` remains available if a custom domain is added later. PayPal webhooks remain reachable at `/api/webhook`; every notification is verified with PayPal before it is recorded.
 
 1. Push this repository, then in Render choose **New → Blueprint** and select it. The included `render.yaml` supplies the Node build and start commands.
-2. In the service Environment settings, set the secret values there — never in Git: `PUBLIC_URL` (the exact `https://…onrender.com` address), a random `AGENTGATE_ACCESS_KEY` of at least 24 characters, `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID`, and, if enabled, the Gemini and Elasticsearch variables. The Blueprint sets `HOSTED_MODE=true`; Render supplies `PORT`, so do not set it yourself.
+2. In the service Environment settings, set the secret values there — never in Git: a random `AGENTGATE_ACCESS_KEY` of at least 24 characters, `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID`, and, if enabled, the Gemini and Elasticsearch variables. The Blueprint sets `HOSTED_MODE=true`; Render supplies `PORT` and the public URL automatically, so do not set either yourself.
 3. Once deployed, register `https://YOUR-SERVICE.onrender.com/api/webhook` in PayPal's **Sandbox** Developer Dashboard using the same REST app. Copy that registration ID into `PAYPAL_WEBHOOK_ID`, then redeploy.
 4. Enter the shared merchant access key at the AgentGate entry screen. It remains only in that browser tab's session storage and is never bundled into the frontend.
 
